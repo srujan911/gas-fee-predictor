@@ -3,19 +3,19 @@ import time
 from datetime import datetime
 from web3 import Web3
 
-# Ethereum node URL
-ETHEREUM_NODE_URL = "https://mainnet.infura.io/v3/48217549432b45008a27d82627742b5b"
+
+ETHEREUM_NODE_URL = "https://mainnet.infura.io/v3/48217549432b45008a27d82627742b5b"# Ethereum node URL
 web3 = Web3(Web3.HTTPProvider(ETHEREUM_NODE_URL))
 
 if not web3.is_connected():
     print("❌ Error: Not connected to Ethereum")
     exit()
 
-# CSV file to store data
-csv_file = "data/gas_fees.csv"
 
-# Create CSV and write headers (if not exists)
-def create_csv_if_needed():
+csv_file = "data/gas_fees.csv"# CSV file to store data
+
+
+def create_csv_if_needed():# Create CSV and write headers (if not exists)
     try:
         with open(csv_file, "x", newline="") as file:
             writer = csv.writer(file)
@@ -24,8 +24,8 @@ def create_csv_if_needed():
     except FileExistsError:
         pass  # File already exists
 
-# Append gas fee data
-def save_gas_data():
+
+def save_gas_data():# Append gas fee data
     block = web3.eth.get_block("latest")
     base_fee = block.get("baseFeePerGas", 0)
     base_fee_gwei = web3.from_wei(base_fee, "gwei")
@@ -35,10 +35,10 @@ def save_gas_data():
         writer.writerow([datetime.now(), block["number"], base_fee_gwei])
         print(f"✅ Saved: Block {block['number']}, Fee {base_fee_gwei:.2f} GWEI")
 
-# Create file if needed
-create_csv_if_needed()
 
-# Collect every 15 seconds (change as needed)
-while True:
+create_csv_if_needed()# Create file if needed
+
+
+while True:# Collect every 15 seconds (change as needed)
     save_gas_data()
     time.sleep(15)
