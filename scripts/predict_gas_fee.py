@@ -2,8 +2,6 @@ import joblib
 import time
 from datetime import datetime
 from web3 import Web3
-import numpy as np
-import pandas as pd
 
 # Load trained model
 model = joblib.load("models/gas_fee_model.pkl")
@@ -16,15 +14,19 @@ if not web3.is_connected():
     print("❌ Not connected to Ethereum")
     exit()
 
-# Get current data
+# Get current block data
 block = web3.eth.get_block("latest")
 timestamp = int(time.time())
 block_number = block["number"]
+baseFeePerGas = block["baseFeePerGas"]
+gasUsed = block["gasUsed"]
+# gasLimit = block["gasLimit"]  ← Not needed if model was trained on 2 features
 
-# Make prediction
-X_new = pd.DataFrame([[timestamp, block_number]], columns=["timestamp", "block_number"])
-predicted_gas = model.predict(X_new)[0]
+# Predict using only 2 features
+predicted_fee = model.predict([[baseFeePerGas, gasUsed]])[0]
+predicted_fee = max(predicted_fee, 0)  # Clamp to 0 if negative
 
-print("📦 Block Number:", block_number)
-print("🕒 Timestamp:", datetime.fromtimestamp(timestamp))
-print(f"🔮 Predicted Base Fee: {predicted_gas:.2f} GWEI")
+# Display result
+print(f"🧱 Block Number: {block_number}")
+print(f"🕒 Timestamp: {datetime.fromtimestamp(timestamp)}")
+print(f"🔮 Predicted Base Fee: {predicted_fee:.2f} GWEI")
