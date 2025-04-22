@@ -11,7 +11,7 @@ load_dotenv()
 ETH_NODE = os.getenv("ETHEREUM_NODE_URL")
 web3 = Web3(Web3.HTTPProvider(ETH_NODE or "https://mainnet.infura.io/v3/48217549432b45008a27d82627742b5b"))
 
-def collect_block_data(n=10):
+def collect_block_data(n=100):
     if not web3.is_connected():
         print("❌ Not connected to Ethereum")
         return
