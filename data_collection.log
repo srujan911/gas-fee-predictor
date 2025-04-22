@@ -1,0 +1,74 @@
+2025-04-22 12:43:15 - INFO - Connecting to Ethereum node
+2025-04-22 12:43:17 - INFO - Connected to Ethereum network. Chain ID: 1
+2025-04-22 12:43:17 - INFO - Starting collection of 100 blocks with 1.0s delay
+2025-04-22 12:43:17 - INFO - Latest block number: 22322971
+2025-04-22 12:43:43 - INFO - Block 22322880 (10/100): 0.38 blocks/s, ~235.7s remaining
+2025-04-22 12:44:21 - INFO - Block 22322890 (20/100): 0.31 blocks/s, ~256.8s remaining
+2025-04-22 12:45:14 - INFO - Block 22322900 (30/100): 0.26 blocks/s, ~274.1s remaining
+2025-04-22 12:45:45 - INFO - Block 22322910 (40/100): 0.27 blocks/s, ~222.1s remaining
+2025-04-22 12:46:06 - INFO - Block 22322920 (50/100): 0.29 blocks/s, ~169.5s remaining
+2025-04-22 12:46:32 - INFO - Block 22322930 (60/100): 0.31 blocks/s, ~130.1s remaining
+2025-04-22 12:47:09 - INFO - Block 22322940 (70/100): 0.30 blocks/s, ~99.5s remaining
+2025-04-22 12:47:51 - INFO - Block 22322950 (80/100): 0.29 blocks/s, ~68.5s remaining
+2025-04-22 12:48:25 - INFO - Block 22322960 (90/100): 0.29 blocks/s, ~34.2s remaining
+2025-04-22 12:49:10 - INFO - Block 22322970 (100/100): 0.28 blocks/s, ~0.0s remaining
+2025-04-22 12:49:11 - INFO - Data saved to data/gas_fees.csv
+2025-04-22 12:49:11 - INFO - Collection completed in 354.30 seconds
+2025-04-22 12:49:11 - INFO - Successful blocks: 100, Failed blocks: 0
+2025-04-22 12:49:11 - INFO - Average collection rate: 0.28 blocks/s
+2025-04-22 13:29:51 - INFO - Connecting to Ethereum node
+2025-04-22 13:29:52 - INFO - Connected to Ethereum network. Chain ID: 1
+2025-04-22 13:29:52 - INFO - Starting collection of 50 blocks with 1.0s delay
+2025-04-22 13:29:52 - INFO - Latest block number: 22323204
+2025-04-22 13:30:18 - INFO - Block 22323160 (7/50): 0.27 blocks/s, ~157.8s remaining
+2025-04-22 13:30:55 - INFO - Block 22323170 (17/50): 0.27 blocks/s, ~121.2s remaining
+2025-04-22 13:31:25 - INFO - Block 22323180 (27/50): 0.29 blocks/s, ~79.0s remaining
+2025-04-22 13:31:56 - INFO - Block 22323190 (37/50): 0.30 blocks/s, ~43.6s remaining
+2025-04-22 13:32:26 - INFO - Block 22323200 (47/50): 0.31 blocks/s, ~9.8s remaining
+2025-04-22 13:32:35 - INFO - Block 22323203 (50/50): 0.31 blocks/s, ~0.0s remaining
+2025-04-22 13:32:36 - INFO - Data saved to data/gas_fees.csv
+2025-04-22 13:32:36 - INFO - Collection completed in 164.02 seconds
+2025-04-22 13:32:36 - INFO - Successful blocks: 50, Failed blocks: 0
+2025-04-22 13:32:36 - INFO - Average collection rate: 0.30 blocks/s
+2025-04-22 13:39:33 - INFO - Connecting to Ethereum node
+2025-04-22 13:39:35 - INFO - Connected to Ethereum network. Chain ID: 1
+2025-04-22 13:39:35 - INFO - Starting collection of 50 blocks with 1.0s delay
+2025-04-22 13:39:35 - INFO - Latest block number: 22323253
+2025-04-22 13:40:06 - INFO - Block 22323210 (8/50): 0.26 blocks/s, ~163.6s remaining
+2025-04-22 13:40:37 - INFO - Block 22323220 (18/50): 0.29 blocks/s, ~110.0s remaining
+2025-04-22 13:41:14 - INFO - Block 22323230 (28/50): 0.28 blocks/s, ~77.8s remaining
+2025-04-22 13:41:50 - INFO - Block 22323240 (38/50): 0.28 blocks/s, ~42.4s remaining
+2025-04-22 13:42:16 - INFO - Block 22323250 (48/50): 0.30 blocks/s, ~6.7s remaining
+2025-04-22 13:42:22 - INFO - Block 22323252 (50/50): 0.30 blocks/s, ~0.0s remaining
+2025-04-22 13:42:23 - INFO - Data saved to data/gas_fees.csv
+2025-04-22 13:42:23 - INFO - Collection completed in 167.26 seconds
+2025-04-22 13:42:23 - INFO - Successful blocks: 50, Failed blocks: 0
+2025-04-22 13:42:23 - INFO - Average collection rate: 0.30 blocks/s
+2025-04-22 13:50:04 - INFO - Connecting to Ethereum node
+2025-04-22 13:50:05 - INFO - Connected to Ethereum network. Chain ID: 1
+2025-04-22 13:50:05 - INFO - Starting collection of 50 blocks with 1.0s delay
+2025-04-22 13:50:05 - INFO - Latest block number: 22323305
+2025-04-22 13:50:13 - INFO - Block 22323260 (6/50): 0.77 blocks/s, ~57.1s remaining
+2025-04-22 13:50:27 - INFO - Block 22323270 (16/50): 0.73 blocks/s, ~46.4s remaining
+2025-04-22 13:50:43 - INFO - Block 22323280 (26/50): 0.70 blocks/s, ~34.3s remaining
+2025-04-22 13:51:01 - INFO - Block 22323290 (36/50): 0.64 blocks/s, ~21.8s remaining
+2025-04-22 13:51:20 - INFO - Block 22323300 (46/50): 0.62 blocks/s, ~6.5s remaining
+2025-04-22 13:51:29 - INFO - Block 22323304 (50/50): 0.60 blocks/s, ~0.0s remaining
+2025-04-22 13:51:30 - INFO - Data saved to data/gas_fees.csv
+2025-04-22 13:51:30 - INFO - Collection completed in 84.34 seconds
+2025-04-22 13:51:30 - INFO - Successful blocks: 50, Failed blocks: 0
+2025-04-22 13:51:30 - INFO - Average collection rate: 0.59 blocks/s
+2025-04-22 13:57:37 - INFO - Connecting to Ethereum node
+2025-04-22 13:57:38 - INFO - Connected to Ethereum network. Chain ID: 1
+2025-04-22 13:57:38 - INFO - Starting collection of 50 blocks with 1.0s delay
+2025-04-22 13:57:39 - INFO - Latest block number: 22323343
+2025-04-22 13:58:01 - INFO - Block 22323300 (8/50): 0.35 blocks/s, ~119.1s remaining
+2025-04-22 13:58:23 - INFO - Block 22323310 (18/50): 0.41 blocks/s, ~77.9s remaining
+2025-04-22 13:58:46 - INFO - Block 22323320 (28/50): 0.42 blocks/s, ~52.7s remaining
+2025-04-22 13:59:06 - INFO - Block 22323330 (38/50): 0.44 blocks/s, ~27.6s remaining
+2025-04-22 13:59:30 - INFO - Block 22323340 (48/50): 0.43 blocks/s, ~4.6s remaining
+2025-04-22 13:59:33 - INFO - Block 22323342 (50/50): 0.44 blocks/s, ~0.0s remaining
+2025-04-22 13:59:34 - INFO - Data saved to data/gas_fees.csv
+2025-04-22 13:59:34 - INFO - Collection completed in 115.57 seconds
+2025-04-22 13:59:34 - INFO - Successful blocks: 50, Failed blocks: 0
+2025-04-22 13:59:34 - INFO - Average collection rate: 0.43 blocks/s

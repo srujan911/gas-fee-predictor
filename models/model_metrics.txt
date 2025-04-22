@@ -1,0 +1,15 @@
+Model Training Results
+=====================
+Mean Absolute Error: 0.02 GWEI
+Root Mean Squared Error: 0.02 GWEI
+R² Score: 0.4093
+
+Training Date: 2025-04-22 13:05:22.263647
+
+Feature Importance Explanation
+===========================
+Feature importance values show the relative importance of each feature
+in making predictions. Values are on a scale from 0 to 1, where higher
+values indicate greater importance. The sum of all importance values equals 1.
+These are NOT the actual values of the features but their relative importance
+in the prediction model.

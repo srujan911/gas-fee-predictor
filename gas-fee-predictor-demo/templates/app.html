@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Gas Fee Predictor - Application</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .navbar-brand .fab.fa-ethereum {
+            font-size: 1.8rem;
+            color: #62688F;
+            background: -webkit-linear-gradient(#62688F, #8A92B2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover .fab.fa-ethereum {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .nav-link {
+            position: relative;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            margin: 0 0.2rem;
+            border-radius: 5px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: white;
+            border-radius: 3px;
+        }
+
+        .nav-link .fab.fa-ethereum {
+            transition: all 0.3s ease;
+            vertical-align: middle;
+        }
+
+        .nav-link:hover .fab.fa-ethereum {
+            transform: rotate(15deg);
+        }
+
+        .nav-link.active .fab.fa-ethereum {
+            color: #8A92B2;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        .tab-content {
+            padding: 2rem 0;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .card-header .fab.fa-ethereum {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            vertical-align: middle;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-header .fab.fa-ethereum {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            border-radius: 30px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .display-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .display-label {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            transition: width 1s ease;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+
+        /* Animation for loading */
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Page transitions */
+        .page-transition-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .page-transition-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 500ms, transform 500ms;
+        }
+
+        .page-transition-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-transition-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 500ms, transform 500ms;
+        }
+
+        /* Custom tab animations */
+        .tab-dashboard.active {
+            animation: slideInRight 0.5s ease-in-out;
+        }
+
+        .tab-predictions.active {
+            animation: slideInUp 0.5s ease-in-out;
+        }
+
+        .tab-heatmap.active {
+            animation: zoomIn 0.5s ease-in-out;
+        }
+
+        .tab-costs.active {
+            animation: slideInLeft 0.5s ease-in-out;
+        }
+
+        .tab-pipeline.active {
+            animation: bounceIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.5;
+            }
+            70% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Back to home button */
+        .back-to-home {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-to-home:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fab fa-ethereum me-2"></i>
+                Ethereum Gas Fee Predictor
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard" data-bs-toggle="tab" role="tab">
+                            <i class="fab fa-ethereum me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#predictions" data-bs-toggle="tab" role="tab">
+                            <i class="fab fa-ethereum me-1"></i> Predictions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#heatmap" data-bs-toggle="tab" role="tab">
+                            <i class="fab fa-ethereum me-1"></i> Heatmap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#costs" data-bs-toggle="tab" role="tab">
+                            <i class="fab fa-ethereum me-1"></i> Costs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pipeline" data-bs-toggle="tab" role="tab">
+                            <i class="fab fa-ethereum me-1"></i> Pipeline
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Dashboard Tab -->
+        <div class="tab-pane active tab-dashboard" id="dashboard">
+            <div class="container">
+                <h2 class="mb-4 animate__animated animate__fadeInDown">Gas Fee Dashboard</h2>
+                <div class="row">
+                    <!-- Current Gas Fee -->
+                    <div class="col-md-4 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fab fa-ethereum me-2"></i> Current Gas Fee
+                            </div>
+                            <div class="card-body text-center">
+                                <h2 class="display-value" id="current-fee">--</h2>
+                                <p class="display-label">GWEI</p>
+                                <p class="text-muted mb-0" id="current-block">Block: --</p>
+                                <p class="text-muted" id="current-time">Time: --</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary">Live Data</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predicted Gas Fee -->
+                    <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <i class="fas fa-chart-line me-2"></i> Predicted Gas Fee
+                            </div>
+                            <div class="card-body text-center">
+                                <h2 class="display-value" id="predicted-fee">--</h2>
+                                <p class="display-label">GWEI</p>
+                                <div id="prediction-change" class="mt-2">
+                                    <span id="change-value">--</span>
+                                    <span id="change-percent">--</span>
+                                </div>
+                                <button id="predict-btn" class="btn btn-success mt-3">
+                                    <i class="fas fa-sync-alt me-2"></i>
+                                    Update Prediction
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block Stats -->
+                    <div class="col-md-4 animate__animated animate__fadeInRight" style="animation-delay: 0.3s;">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <i class="fas fa-cube me-2"></i> Block Statistics
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Gas Used:</span>
+                                    <span id="gas-used" class="fw-bold">--</span>
+                                </div>
+                                <div class="progress">
+                                    <div id="gas-used-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Gas Limit:</span>
+                                    <span id="gas-limit" class="fw-bold">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Transactions:</span>
+                                    <span id="tx-count" class="fw-bold">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Block Number:</span>
+                                    <span id="block-number" class="fw-bold">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gas Fee Chart -->
+                <div class="row mt-4">
+                    <div class="col-12 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <i class="fas fa-chart-area me-2"></i> Gas Fee History
+                            </div>
+                            <div class="card-body">
+                                <div id="gas-fee-chart" style="height: 400px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictions Tab -->
+        <div class="tab-pane tab-predictions" id="predictions">
+            <div class="container">
+                <h2 class="mb-4 animate__animated animate__fadeInDown">Gas Fee Predictions</h2>
+                <div class="row">
+                    <div class="col-md-6 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <i class="fas fa-chart-bar me-2"></i> Hourly Gas Fee Pattern
+                            </div>
+                            <div class="card-body">
+                                <div id="hourly-pattern-chart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-chart-pie me-2"></i> Prediction Accuracy
+                            </div>
+                            <div class="card-body">
+                                <div id="prediction-accuracy-chart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <i class="fas fa-lightbulb me-2"></i> Prediction Insights
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="alert alert-info">
+                                            <h5 class="alert-heading">Current Trend</h5>
+                                            <p id="current-trend">Analyzing gas fee trends...</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="alert alert-warning">
+                                            <h5 class="alert-heading">Transaction Recommendation</h5>
+                                            <p id="transaction-recommendation">Analyzing transaction conditions...</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="alert alert-success">
+                                            <h5 class="alert-heading">Optimal Time</h5>
+                                            <p id="optimal-time">Analyzing optimal transaction times...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Heatmap Tab -->
+        <div class="tab-pane tab-heatmap" id="heatmap">
+            <div class="container">
+                <h2 class="mb-4 animate__animated animate__fadeInDown">Gas Fee Heatmap Analysis</h2>
+                <div class="row">
+                    <div class="col-md-8 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="fab fa-ethereum me-2"></i> Gas Fee Heatmap by Day and Hour (IST)
+                            </div>
+                            <div class="card-body text-center">
+                                <div id="heatmap-loading" class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <img id="heatmap-image" src="" alt="Gas Fee Heatmap" class="img-fluid d-none">
+                                <div class="mt-3">
+                                    <button id="generate-heatmap-btn" class="btn btn-warning me-2">
+                                        <i class="fas fa-sync-alt me-2"></i>
+                                        Generate Heatmap
+                                    </button>
+                                    <button id="run-heatmap-script-btn" class="btn btn-info">
+                                        <i class="fas fa-code me-2"></i>
+                                        Run Heatmap Script
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <i class="fas fa-clock me-2"></i> Optimal Transaction Times
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Best Time to Transact</h5>
+                                <div id="best-time" class="alert alert-success">
+                                    Loading best time data...
+                                </div>
+
+                                <h5 class="card-title mt-4">Worst Time to Transact</h5>
+                                <div id="worst-time" class="alert alert-danger">
+                                    Loading worst time data...
+                                </div>
+
+                                <h5 class="card-title mt-4">Recommended Windows</h5>
+                                <ul id="optimal-times" class="list-group">
+                                    <li class="list-group-item">Loading optimal times...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Costs Tab -->
+        <div class="tab-pane tab-costs" id="costs">
+            <div class="container">
+                <h2 class="mb-4 animate__animated animate__fadeInDown">Transaction Cost Calculator</h2>
+                <div class="row">
+                    <div class="col-md-6 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+                        <div class="card">
+                            <div class="card-header bg-danger text-white">
+                                <i class="fab fa-ethereum me-2"></i> Current Transaction Costs
+                            </div>
+                            <div class="card-body">
+                                <div id="current-costs-chart" style="height: 400px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <i class="fab fa-ethereum me-2"></i> Predicted Transaction Costs
+                            </div>
+                            <div class="card-body">
+                                <div id="predicted-costs-chart" style="height: 400px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-table me-2"></i> Cost Comparison
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Transaction Type</th>
+                                                <th>Gas Used</th>
+                                                <th>Current Cost (ETH)</th>
+                                                <th>Current Cost (USD)</th>
+                                                <th>Predicted Cost (ETH)</th>
+                                                <th>Predicted Cost (USD)</th>
+                                                <th>Savings</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cost-comparison-table">
+                                            <tr>
+                                                <td colspan="7" class="text-center">Loading transaction cost data...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button id="calculate-costs-btn" class="btn btn-danger mt-3">
+                                    <i class="fas fa-sync-alt me-2"></i>
+                                    Update Transaction Costs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline Tab -->
+        <div class="tab-pane tab-pipeline" id="pipeline">
+            <div class="container">
+                <h2 class="mb-4 animate__animated animate__fadeInDown">Run Prediction Pipeline</h2>
+                <div class="row">
+                    <div class="col-md-6 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <i class="fas fa-cogs me-2"></i> Pipeline Configuration
+                            </div>
+                            <div class="card-body">
+                                <form id="pipeline-form">
+                                    <div class="mb-3">
+                                        <label for="num-blocks" class="form-label">Number of Blocks</label>
+                                        <input type="number" class="form-control" id="num-blocks" min="10" max="500" value="200">
+                                        <div class="form-text">Number of recent blocks to collect (10-500)</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="timezone" class="form-label">Timezone</label>
+                                        <input type="text" class="form-control" id="timezone" value="Asia/Kolkata" readonly>
+                                        <div class="form-text">Timezone for data collection and analysis (IST)</div>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="use-improved" checked>
+                                        <label class="form-check-label" for="use-improved">Use Improved Prediction Model</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-play me-2"></i>
+                                        Run Full Pipeline
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <i class="fas fa-tasks me-2"></i> Pipeline Status
+                            </div>
+                            <div class="card-body">
+                                <div id="pipeline-status" class="alert alert-info">
+                                    Pipeline ready to run.
+                                </div>
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div id="pipeline-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+                                </div>
+                                <div id="pipeline-log" class="border p-3 bg-light" style="height: 200px; overflow-y: auto;">
+                                    <p class="text-muted">Pipeline log will appear here...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Home Button -->
+    <a href="/" class="back-to-home">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle tab switching with animations
+            $('.nav-link').on('click', function() {
+                $('.nav-link').removeClass('active');
+                $(this).addClass('active');
+
+                const target = $(this).attr('href');
+                $('.tab-pane').removeClass('active');
+                $(target).addClass('active');
+            });
+
+            // Make prediction on page load
+            makePrediction();
+            loadHistoricalData();
+
+            // Add animation classes to elements when they come into view
+            const animateOnScroll = function() {
+                $('.animate__animated').each(function() {
+                    const position = $(this).offset().top;
+                    const scroll = $(window).scrollTop();
+                    const windowHeight = $(window).height();
+
+                    if (scroll + windowHeight > position) {
+                        const animationClass = $(this).data('animation') || 'animate__fadeIn';
+                        $(this).addClass(animationClass);
+                    }
+                });
+            };
+
+            $(window).scroll(animateOnScroll);
+            animateOnScroll(); // Run once on page load
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Ethereum Gas Fee Predictor</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('{{ url_for("static", filename="images/ethereum-pattern.png") }}') repeat;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .page-header .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+        }
+        
+        .page-subtitle {
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .dashboard-card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 30px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: #1a2a6c;
+            box-shadow: 0 5px 15px rgba(26, 42, 108, 0.2);
+        }
+        
+        .nav-pills .nav-link:not(.active):hover {
+            background-color: rgba(26, 42, 108, 0.1);
+        }
+        
+        .display-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0;
+            line-height: 1.2;
+        }
+        
+        .display-label {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        .display-change {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .display-change.positive {
+            color: #28a745;
+        }
+        
+        .display-change.negative {
+            color: #dc3545;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        
+        .back-to-home {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .back-to-home:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+        
+        /* Animation for loading */
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8" data-aos="fade-right">
+                    <h1 class="page-title">Gas Fee Dashboard</h1>
+                    <p class="page-subtitle">Real-time monitoring and prediction of Ethereum gas fees</p>
+                </div>
+                <div class="col-md-4 text-md-end" data-aos="fade-left">
+                    <nav>
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">Live</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Historical</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Gas Fee Overview -->
+        <div class="row">
+            <!-- Current Gas Fee -->
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="dashboard-card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-gas-pump me-2"></i> Current Gas Fee
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 class="display-value" id="current-fee">--</h2>
+                        <p class="display-label">GWEI</p>
+                        <p class="text-muted mb-0" id="current-block">Block: --</p>
+                        <p class="text-muted" id="current-time">Time: --</p>
+                        <div class="mt-3">
+                            <span class="badge bg-primary">Live Data</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Predicted Gas Fee -->
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="dashboard-card">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-chart-line me-2"></i> Predicted Gas Fee
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 class="display-value" id="predicted-fee">--</h2>
+                        <p class="display-label">GWEI</p>
+                        <div class="display-change" id="prediction-change">
+                            <span id="change-value">--</span>
+                            <span id="change-percent">--</span>
+                        </div>
+                        <button id="predict-btn" class="btn btn-success mt-3">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Update Prediction
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Block Statistics -->
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="dashboard-card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-cube me-2"></i> Block Statistics
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Gas Used:</span>
+                            <span id="gas-used" class="fw-bold">--</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div id="gas-used-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Gas Limit:</span>
+                            <span id="gas-limit" class="fw-bold">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Transactions:</span>
+                            <span id="tx-count" class="fw-bold">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Block Number:</span>
+                            <span id="block-number" class="fw-bold">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gas Fee Chart -->
+        <div class="row mt-4">
+            <div class="col-12" data-aos="fade-up" data-aos-delay="400">
+                <div class="dashboard-card">
+                    <div class="card-header bg-dark text-white">
+                        <i class="fas fa-chart-area me-2"></i> Gas Fee History
+                    </div>
+                    <div class="card-body">
+                        <div id="gas-fee-chart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Row -->
+        <div class="row mt-4">
+            <!-- Average Gas Fee -->
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="stat-value" id="avg-gas-fee">--</div>
+                    <div class="stat-label">Average Gas Fee (24h)</div>
+                </div>
+            </div>
+            
+            <!-- Highest Gas Fee -->
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-danger">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="stat-value" id="max-gas-fee">--</div>
+                    <div class="stat-label">Highest Gas Fee (24h)</div>
+                </div>
+            </div>
+            
+            <!-- Lowest Gas Fee -->
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-value" id="min-gas-fee">--</div>
+                    <div class="stat-label">Lowest Gas Fee (24h)</div>
+                </div>
+            </div>
+            
+            <!-- Volatility -->
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="stat-value" id="volatility">--</div>
+                    <div class="stat-label">Volatility (24h)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommendation Card -->
+        <div class="row mt-4">
+            <div class="col-12" data-aos="fade-up" data-aos-delay="500">
+                <div class="dashboard-card">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-lightbulb me-2"></i> Transaction Recommendation
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="alert alert-info">
+                                    <h5 class="alert-heading">Current Trend</h5>
+                                    <p id="current-trend">Analyzing gas fee trends...</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-warning">
+                                    <h5 class="alert-heading">Transaction Recommendation</h5>
+                                    <p id="transaction-recommendation">Analyzing transaction conditions...</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-success">
+                                    <h5 class="alert-heading">Optimal Time</h5>
+                                    <p id="optimal-time">Analyzing optimal transaction times...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back to Home Button -->
+    <a href="/" class="back-to-home" data-aos="fade-up" data-aos-delay="800">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS Animation Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Make prediction on page load
+        $(document).ready(function() {
+            makePrediction();
+            loadHistoricalData();
+            
+            // Simulate some statistics for demonstration
+            setTimeout(function() {
+                $('#avg-gas-fee').text('42.35');
+                $('#max-gas-fee').text('68.72');
+                $('#min-gas-fee').text('31.08');
+                $('#volatility').text('18.4%');
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
