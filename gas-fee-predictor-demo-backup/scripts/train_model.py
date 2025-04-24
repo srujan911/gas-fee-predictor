@@ -22,7 +22,7 @@ from xgboost import XGBRegressor
 import joblib
 import logging
 
-# Configure logging
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -37,29 +37,28 @@ def load_and_preprocess_data(data_path="data/gas_fees_cleaned.csv"):
         df = pd.read_csv(data_path)
         logger.info(f"Loaded data shape: {df.shape}")
 
-        # Convert timestamp to datetime and then to unix timestamp
+
         logger.info("Converting timestamp to unix format")
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
         df = df.dropna(subset=["timestamp"])
 
-        # Convert to unix timestamp (seconds since epoch)
-        # This preserves timezone information correctly
+
         df["timestamp"] = df["timestamp"].map(lambda x: int(x.timestamp()))
 
-        # Ensure block_number is an integer
+
         df["block_number"] = df["block_number"].astype(int)
 
-        # Ensure other numeric columns are integers
+
         for col in ["gas_used", "gas_limit", "tx_count"]:
             if col in df.columns:
                 df[col] = df[col].astype(int)
 
-        # Drop rows with missing values in key columns
+
         required_columns = ["timestamp", "block_number", "gas_used", "gas_limit", "tx_count", "base_fee_gwei"]
         logger.info("Dropping rows with missing values in key columns")
         df = df.dropna(subset=required_columns)
 
-        # Create feature and target variables
+
         X = df[["timestamp", "block_number", "gas_used", "gas_limit", "tx_count"]]
         y = df["base_fee_gwei"]
 
@@ -123,7 +122,7 @@ def evaluate_model(model, X_test, y_test):
         logger.info("Evaluating model performance")
         y_pred = model.predict(X_test)
 
-        # Calculate metrics
+
         mae = mean_absolute_error(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         r2 = r2_score(y_test, y_pred)
@@ -146,13 +145,13 @@ def evaluate_model(model, X_test, y_test):
 def save_model(model, scaler, metrics, output_path="models/gas_fee_model.pkl"):
     """Save the trained model and scaler."""
     try:
-        # Create models directory if it doesn't exist
+
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         logger.info(f"Saving model to {output_path}")
         joblib.dump((model, scaler), output_path)
 
-        # Save model metrics to a text file
+
         metrics_path = os.path.join(os.path.dirname(output_path), "model_metrics.txt")
         with open(metrics_path, 'w') as f:
             f.write(f"Model Training Results\n")
@@ -162,7 +161,7 @@ def save_model(model, scaler, metrics, output_path="models/gas_fee_model.pkl"):
             f.write(f"R² Score: {metrics['r2']:.4f}\n")
             f.write(f"\nTraining Date: {pd.Timestamp.now()}\n")
 
-            # Add feature importance explanation
+
             f.write(f"\nFeature Importance Explanation\n")
             f.write(f"===========================\n")
             f.write(f"Feature importance values show the relative importance of each feature\n")
@@ -179,23 +178,23 @@ def save_model(model, scaler, metrics, output_path="models/gas_fee_model.pkl"):
 def plot_feature_importance(model, feature_names):
     """Plot feature importance from the trained model."""
     try:
-        # Get feature importance
+
         importance = model.feature_importances_
 
-        # Create a DataFrame for better visualization
+
         feature_importance = pd.DataFrame({
             'Feature': feature_names,
             'Importance': importance
         }).sort_values('Importance', ascending=False)
 
-        # Add percentage column
+
         feature_importance['Percentage'] = feature_importance['Importance'] * 100
 
-        # Plot
+
         plt.figure(figsize=(10, 6))
         ax = sns.barplot(x='Importance', y='Feature', data=feature_importance)
 
-        # Add percentage labels to the bars
+
         for i, p in enumerate(ax.patches):
             width = p.get_width()
             plt.text(width + 0.01, p.get_y() + p.get_height()/2,
@@ -206,78 +205,61 @@ def plot_feature_importance(model, feature_names):
         plt.xlabel('Relative Importance (0-1 scale)', fontsize=12)
         plt.tight_layout()
 
-        # Save the plot
+
         os.makedirs('models/plots', exist_ok=True)
         plt.savefig('models/plots/feature_importance.png')
         logger.info("Feature importance plot saved to models/plots/feature_importance.png")
 
-        # Return the DataFrame for further analysis
+
         return feature_importance
     except Exception as e:
         logger.error(f"Error plotting feature importance: {e}")
         logger.info("Continuing without plotting feature importance")
         return None
 
-def train_gas_fee_model():
-    """Function to train the gas fee model for the pipeline."""
+def main():
+    """Main function to run the model training pipeline."""
     try:
-        logger.info("Starting gas fee model training")
 
-        # Load and preprocess data
-        X, y, _ = load_and_preprocess_data()  # We don't need the df variable here
+        X, y, _ = load_and_preprocess_data()
 
-        # Scale features
+
         X_scaled, scaler = scale_features(X)
 
-        # Split data into training and testing sets
+
         logger.info("Splitting data into training and testing sets")
         X_train, X_test, y_train, y_test = train_test_split(
             X_scaled, y, test_size=0.2, random_state=42
         )
 
-        # Train model
+
         model = train_model(X_train, y_train, perform_grid_search=False)
 
-        # Evaluate model
+
         metrics = evaluate_model(model, X_test, y_test)
 
-        # Plot feature importance
+
         feature_importance = plot_feature_importance(model, X.columns)
 
-        # Save model
+
         save_model(model, scaler, metrics)
 
-        logger.info("Gas fee model training completed successfully")
-        return True
-    except Exception as e:
-        logger.error(f"Error training gas fee model: {e}")
-        return False
 
-def main():
-    """Main function to run the model training pipeline."""
-    try:
-        # Call the train_gas_fee_model function
-        success = train_gas_fee_model()
+        print("\n" + "=" * 50)
+        print("🔮 ETHEREUM GAS FEE PREDICTION MODEL 🔮")
+        print("=" * 50)
+        print(f"✅ Model trained successfully with XGBoost!")
+        print(f"📉 Mean Absolute Error: {metrics['mae']:.2f} GWEI")
+        print(f"📈 Root Mean Squared Error: {metrics['rmse']:.2f} GWEI")
+        print(f"📊 R² Score: {metrics['r2']:.4f}")
+        print("=" * 50)
 
-        if success:
-            # Print results
-            print("\n" + "=" * 50)
-            print("🔮 ETHEREUM GAS FEE PREDICTION MODEL 🔮")
-            print("=" * 50)
-            print(f"✅ Model trained successfully with XGBoost!")
+        if feature_importance is not None:
+            print("\nFeature Importance (relative importance of each feature in the model):")
+            for _, row in feature_importance.iterrows():
+                print(f"  {row['Feature']}: {row['Importance']:.4f} ({row['Importance']*100:.2f}%)")
 
-            # Load metrics from the saved file
-            metrics_path = "models/model_metrics.txt"
-            if os.path.exists(metrics_path):
-                with open(metrics_path, 'r') as f:
-                    metrics_content = f.read()
-                    print(metrics_content)
-
-            print("=" * 50)
-            return 0
-        else:
-            print("❌ Model training failed")
-            return 1
+        return 0
     except Exception as e:
         logger.error(f"An error occurred in the training pipeline: {e}")
         print(f"❌ Error: {e}")

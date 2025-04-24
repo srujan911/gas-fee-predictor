@@ -1,0 +1,157 @@
+/* Main Styles for Ethereum Gas Fee Predictor */
+
+:root {
+    --ethereum-blue: #627eea;
+    --ethereum-blue-dark: #3c5be0;
+    --ethereum-blue-light: #a7b6f7;
+    --sidebar-width: 240px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    background-color: #212529;
+    width: var(--sidebar-width);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: rgba(255, 255, 255, .75);
+    padding: .75rem 1rem;
+    border-radius: 0.25rem;
+    margin: 0.2rem 0.5rem;
+}
+
+.sidebar .nav-link:hover {
+    color: rgba(255, 255, 255, .9);
+    background-color: rgba(255, 255, 255, .1);
+}
+
+.sidebar .nav-link.active {
+    color: #fff;
+    background-color: var(--ethereum-blue);
+}
+
+.sidebar .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* Main Content Area */
+.col-md-9.ms-sm-auto {
+    margin-left: var(--sidebar-width);
+}
+
+/* Logo */
+.logo {
+    width: 32px;
+    height: 32px;
+}
+
+/* Cards */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1rem;
+    border: none;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Charts */
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 100%;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--ethereum-blue);
+    border-color: var(--ethereum-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--ethereum-blue-dark);
+    border-color: var(--ethereum-blue-dark);
+}
+
+.btn-outline-secondary {
+    color: var(--ethereum-blue);
+    border-color: var(--ethereum-blue);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--ethereum-blue);
+    border-color: var(--ethereum-blue);
+}
+
+/* Heatmap */
+.heatmap-container {
+    position: relative;
+    margin: auto;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+#heatmapImage {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        padding-top: 1rem;
+    }
+    
+    .col-md-9.ms-sm-auto {
+        margin-left: 0;
+    }
+}
+
+/* Utility classes */
+.text-ethereum {
+    color: var(--ethereum-blue);
+}
+
+.bg-ethereum {
+    background-color: var(--ethereum-blue);
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Table styles */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Form controls */
+.form-control:focus, .form-select:focus {
+    border-color: var(--ethereum-blue-light);
+    box-shadow: 0 0 0 0.25rem rgba(98, 126, 234, 0.25);
+}

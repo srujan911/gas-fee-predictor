@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Gas Fee Predictor</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #627eea 0%, #3c5be0 100%);
+            color: white;
+            padding: 5rem 0;
+            border-radius: 0 0 2rem 2rem;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #627eea;
+            margin-bottom: 1rem;
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+            border-radius: 1rem;
+            overflow: hidden;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .cta-section {
+            background-color: #f1f5fe;
+            border-radius: 1rem;
+        }
+        .ethereum-logo {
+            height: 4rem;
+            margin-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #627eea;">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="{{ url_for('static', filename='images/ethereum-logo.svg') }}" alt="Ethereum Logo" class="ethereum-logo">
+                <span>Ethereum Gas Fee Predictor</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-light text-primary px-4" href="{{ url_for('dashboard_page') }}">Launch App</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Predict Ethereum Gas Fees with Precision</h1>
+                    <p class="lead mb-4">Save on transaction costs by knowing the optimal time to execute your Ethereum transactions. Our advanced prediction model helps you minimize gas fees.</p>
+                    <a href="{{ url_for('dashboard_page') }}" class="btn btn-light btn-lg px-4 me-md-2">Get Started</a>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="{{ url_for('static', filename='images/gas_fee_heatmap.png') }}" alt="Gas Fee Heatmap" class="img-fluid rounded shadow-lg" style="max-height: 400px;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5" id="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Key Features</h2>
+                <p class="lead text-muted">Powerful tools to optimize your Ethereum transactions</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <h5 class="card-title">Real-time Predictions</h5>
+                            <p class="card-text">Get accurate gas fee predictions based on real-time blockchain data and advanced machine learning models.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-grid-3x3"></i>
+                            </div>
+                            <h5 class="card-title">Gas Fee Heatmap</h5>
+                            <p class="card-text">Visualize gas fee patterns by day and hour to identify the best times for your transactions.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-currency-exchange"></i>
+                            </div>
+                            <h5 class="card-title">Cost Calculator</h5>
+                            <p class="card-text">Estimate transaction costs for different types of operations on the Ethereum network.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-bell"></i>
+                            </div>
+                            <h5 class="card-title">Gas Fee Alerts</h5>
+                            <p class="card-text">Set up notifications for when gas fees drop below your specified threshold.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5 bg-light" id="how-it-works">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">How It Works</h2>
+                <p class="lead text-muted">Our advanced prediction model in action</p>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <img src="{{ url_for('static', filename='images/gas_fee_heatmap.png') }}" alt="Gas Fee Heatmap" class="img-fluid rounded shadow">
+                </div>
+                <div class="col-md-6">
+                    <div class="accordion" id="howItWorksAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    1. Data Collection
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#howItWorksAccordion">
+                                <div class="accordion-body">
+                                    We continuously collect real-time data from the Ethereum blockchain, including gas prices, block utilization, and transaction volumes.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    2. Machine Learning Model
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#howItWorksAccordion">
+                                <div class="accordion-body">
+                                    Our advanced machine learning model analyzes historical patterns and current network conditions to predict future gas fee trends.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    3. Pattern Recognition
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#howItWorksAccordion">
+                                <div class="accordion-body">
+                                    We identify recurring patterns in gas fee fluctuations based on time of day, day of week, and network congestion levels.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    4. Actionable Insights
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#howItWorksAccordion">
+                                <div class="accordion-body">
+                                    We present you with clear, actionable insights about when to execute your transactions for optimal gas fees.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="cta-section p-5 text-center">
+                        <h2 class="fw-bold mb-4">Ready to Optimize Your Ethereum Transactions?</h2>
+                        <p class="lead mb-4">Start saving on gas fees today with our powerful prediction tools.</p>
+                        <a href="{{ url_for('dashboard_page') }}" class="btn btn-primary btn-lg px-5">Launch Application</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">© 2025 Ethereum Gas Fee Predictor. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Created by SRUJANJAINI</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

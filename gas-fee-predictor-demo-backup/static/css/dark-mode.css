@@ -1,0 +1,118 @@
+/* Dark Mode Styles for Ethereum Gas Fee Predictor */
+
+.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.dark-mode .card {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+.dark-mode .card-title {
+    color: #e0e0e0;
+}
+
+.dark-mode .text-muted {
+    color: #adb5bd !important;
+}
+
+.dark-mode .table {
+    color: #e0e0e0;
+}
+
+.dark-mode .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+.dark-mode .btn-outline-secondary {
+    color: #a7b6f7;
+    border-color: #a7b6f7;
+}
+
+.dark-mode .btn-outline-secondary:hover {
+    background-color: #627eea;
+    border-color: #627eea;
+    color: #fff;
+}
+
+.dark-mode .border-bottom {
+    border-bottom-color: #333 !important;
+}
+
+.dark-mode .accordion-button {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.dark-mode .accordion-button:not(.collapsed) {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+.dark-mode .accordion-button::after {
+    filter: invert(1);
+}
+
+.dark-mode .accordion-body {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.dark-mode .list-group-item {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+.dark-mode .bg-light {
+    background-color: #2d2d2d !important;
+}
+
+.dark-mode .nav-tabs .nav-link {
+    color: #a7b6f7;
+}
+
+.dark-mode .nav-tabs .nav-link.active {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333 #333 #1e1e1e;
+}
+
+.dark-mode .alert-info {
+    background-color: #1a3253;
+    color: #9ec5fe;
+    border-color: #084298;
+}
+
+/* Chart adjustments for dark mode */
+.dark-mode .chartjs-render-monitor {
+    filter: invert(0.85) hue-rotate(180deg);
+}
+
+/* Sidebar adjustments for dark mode */
+.dark-mode .sidebar {
+    background-color: #1a1a1a;
+}
+
+.dark-mode .sidebar .nav-link:not(.active) {
+    color: rgba(255, 255, 255, .6);
+}
+
+.dark-mode .sidebar .nav-link:hover:not(.active) {
+    background-color: rgba(255, 255, 255, .1);
+}

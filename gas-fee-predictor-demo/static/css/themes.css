@@ -1,0 +1,484 @@
+/* Color Themes for Ethereum Gas Fee Predictor */
+
+/* Base Theme Variables */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --accent-color: #f39c12;
+    --danger-color: #e74c3c;
+    --info-color: #1abc9c;
+    --warning-color: #f1c40f;
+    --dark-color: #34495e;
+    --light-color: #ecf0f1;
+    
+    --primary-gradient: linear-gradient(135deg, #3498db, #2980b9);
+    --secondary-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+    --accent-gradient: linear-gradient(135deg, #f39c12, #e67e22);
+    --danger-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
+    --info-gradient: linear-gradient(135deg, #1abc9c, #16a085);
+    --dark-gradient: linear-gradient(135deg, #34495e, #2c3e50);
+    
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    --card-hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    
+    --transition-speed: 0.3s;
+    --transition-function: ease-in-out;
+}
+
+/* Theme: Ethereum */
+.theme-ethereum {
+    --primary-color: #627eea;
+    --secondary-color: #3c3c3d;
+    --accent-color: #ecf0f1;
+    --danger-color: #e74c3c;
+    --info-color: #3498db;
+    --warning-color: #f1c40f;
+    --dark-color: #2c3e50;
+    --light-color: #f8f9fa;
+    
+    --primary-gradient: linear-gradient(135deg, #627eea, #3c3c3d);
+    --secondary-gradient: linear-gradient(135deg, #3c3c3d, #2c2c2d);
+    --accent-gradient: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+    --danger-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
+    --info-gradient: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+/* Theme: Crypto */
+.theme-crypto {
+    --primary-color: #f7931a;
+    --secondary-color: #4caf50;
+    --accent-color: #9c27b0;
+    --danger-color: #f44336;
+    --info-color: #2196f3;
+    --warning-color: #ff9800;
+    --dark-color: #212121;
+    --light-color: #fafafa;
+    
+    --primary-gradient: linear-gradient(135deg, #f7931a, #ff8f00);
+    --secondary-gradient: linear-gradient(135deg, #4caf50, #388e3c);
+    --accent-gradient: linear-gradient(135deg, #9c27b0, #7b1fa2);
+    --danger-gradient: linear-gradient(135deg, #f44336, #d32f2f);
+    --info-gradient: linear-gradient(135deg, #2196f3, #1976d2);
+}
+
+/* Theme: Dark Mode */
+.theme-dark {
+    --primary-color: #bb86fc;
+    --secondary-color: #03dac6;
+    --accent-color: #cf6679;
+    --danger-color: #ff7597;
+    --info-color: #64b5f6;
+    --warning-color: #ffb74d;
+    --dark-color: #121212;
+    --light-color: #333333;
+    
+    --primary-gradient: linear-gradient(135deg, #bb86fc, #7c4dff);
+    --secondary-gradient: linear-gradient(135deg, #03dac6, #018786);
+    --accent-gradient: linear-gradient(135deg, #cf6679, #b00020);
+    --danger-gradient: linear-gradient(135deg, #ff7597, #ff0266);
+    --info-gradient: linear-gradient(135deg, #64b5f6, #2196f3);
+    
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.theme-dark .card {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+.theme-dark .card-title {
+    color: #bb86fc;
+}
+
+.theme-dark .nav-tabs {
+    border-bottom-color: #333;
+}
+
+.theme-dark .nav-link {
+    color: #e0e0e0;
+}
+
+.theme-dark .nav-link.active {
+    background-color: #1e1e1e;
+    border-color: #333 #333 #1e1e1e;
+    color: #bb86fc;
+}
+
+.theme-dark .table {
+    color: #e0e0e0;
+}
+
+.theme-dark .form-control,
+.theme-dark .form-select {
+    background-color: #333;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+/* Theme: Neon */
+.theme-neon {
+    --primary-color: #00ff99;
+    --secondary-color: #ff00ff;
+    --accent-color: #00ffff;
+    --danger-color: #ff3131;
+    --info-color: #00ccff;
+    --warning-color: #ffff00;
+    --dark-color: #000000;
+    --light-color: #ffffff;
+    
+    --primary-gradient: linear-gradient(135deg, #00ff99, #00cc99);
+    --secondary-gradient: linear-gradient(135deg, #ff00ff, #cc00cc);
+    --accent-gradient: linear-gradient(135deg, #00ffff, #00cccc);
+    --danger-gradient: linear-gradient(135deg, #ff3131, #cc0000);
+    --info-gradient: linear-gradient(135deg, #00ccff, #0099cc);
+    
+    background-color: #0a0a0a;
+    color: #ffffff;
+}
+
+.theme-neon .card {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.theme-neon .card-title {
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+}
+
+.theme-neon .nav-tabs {
+    border-bottom-color: var(--secondary-color);
+}
+
+.theme-neon .nav-link {
+    color: #ffffff;
+}
+
+.theme-neon .nav-link.active {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+    text-shadow: 0 0 5px var(--secondary-color);
+}
+
+.theme-neon .btn-primary {
+    background: var(--primary-gradient);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+.theme-neon .btn-primary:hover {
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+/* Enhanced Card Styles */
+.card {
+    transition: transform var(--transition-speed) var(--transition-function),
+                box-shadow var(--transition-speed) var(--transition-function);
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+.card-gradient-primary {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.card-gradient-secondary {
+    background: var(--secondary-gradient);
+    color: white;
+}
+
+.card-gradient-accent {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.card-gradient-info {
+    background: var(--info-gradient);
+    color: white;
+}
+
+/* Glowing Effects */
+.glow-primary {
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.glow-secondary {
+    box-shadow: 0 0 15px var(--secondary-color);
+}
+
+.glow-accent {
+    box-shadow: 0 0 15px var(--accent-color);
+}
+
+.glow-info {
+    box-shadow: 0 0 15px var(--info-color);
+}
+
+/* Button Styles */
+.btn-gradient-primary {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+}
+
+.btn-gradient-secondary {
+    background: var(--secondary-gradient);
+    border: none;
+    color: white;
+}
+
+.btn-gradient-accent {
+    background: var(--accent-gradient);
+    border: none;
+    color: white;
+}
+
+/* Text Effects */
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+.text-glow {
+    text-shadow: 0 0 5px currentColor;
+}
+
+/* Border Effects */
+.border-gradient {
+    border: 3px solid;
+    border-image-slice: 1;
+    border-image-source: var(--primary-gradient);
+}
+
+/* Theme Switcher */
+.theme-switcher {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--dark-gradient);
+    border-radius: 50px;
+    padding: 10px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    gap: 10px;
+}
+
+.theme-option {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.theme-option:hover {
+    transform: scale(1.2);
+}
+
+.theme-option.active {
+    border: 2px solid white;
+    transform: scale(1.2);
+}
+
+.theme-default {
+    background: linear-gradient(135deg, #3498db, #2ecc71);
+}
+
+.theme-option-ethereum {
+    background: linear-gradient(135deg, #627eea, #3c3c3d);
+}
+
+.theme-option-crypto {
+    background: linear-gradient(135deg, #f7931a, #4caf50);
+}
+
+.theme-option-dark {
+    background: linear-gradient(135deg, #bb86fc, #03dac6);
+}
+
+.theme-option-neon {
+    background: linear-gradient(135deg, #00ff99, #ff00ff);
+}
+
+/* Enhanced Visualization Transitions */
+.chart-container {
+    position: relative;
+    transition: all 0.5s ease;
+}
+
+.chart-container:hover {
+    transform: scale(1.02);
+}
+
+/* Value Display */
+.value-display {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.value-display-large {
+    font-size: 3.5rem;
+}
+
+.value-display-small {
+    font-size: 1.8rem;
+}
+
+.value-unit {
+    font-size: 1rem;
+    opacity: 0.7;
+    margin-left: 5px;
+}
+
+/* Trend Indicators */
+.trend-up {
+    color: var(--secondary-color);
+}
+
+.trend-up::after {
+    content: "↑";
+    margin-left: 5px;
+}
+
+.trend-down {
+    color: var(--danger-color);
+}
+
+.trend-down::after {
+    content: "↓";
+    margin-left: 5px;
+}
+
+/* Horizontal Scrollbar for Charts */
+.chart-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 15px;
+}
+
+.chart-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Ethereum Logo Animation */
+.eth-logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Gas Pump Animation */
+@keyframes pump {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.gas-pump-icon {
+    animation: pump 2s ease-in-out infinite;
+}
+
+/* Data Refresh Animation */
+@keyframes refresh {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.refresh-icon {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-icon:hover {
+    color: var(--primary-color);
+}
+
+.refresh-icon.refreshing {
+    animation: refresh 1s linear infinite;
+    color: var(--primary-color);
+}
+
+/* Tooltip Styles */
+.custom-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--dark-color);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.custom-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Badge Styles */
+.badge-gradient {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.badge-gradient-secondary {
+    background: var(--secondary-gradient);
+}
+
+.badge-gradient-accent {
+    background: var(--accent-gradient);
+}
+
+/* Responsive Font Sizes */
+@media (max-width: 768px) {
+    .value-display {
+        font-size: 2rem;
+    }
+    
+    .value-display-large {
+        font-size: 2.5rem;
+    }
+    
+    .value-display-small {
+        font-size: 1.5rem;
+    }
+}

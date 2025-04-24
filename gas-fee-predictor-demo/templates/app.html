@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethereum Gas Fee Predictor - Application</title>
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -12,6 +14,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Dark Mode CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -361,6 +365,23 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             color: white;
         }
+
+        /* Scrollable chart containers */
+        .chart-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 500px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Ensure charts have minimum width to enable horizontal scrolling */
+        .chart-inner {
+            min-width: 800px;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -400,6 +421,16 @@
                         <a class="nav-link" href="#pipeline" data-bs-toggle="tab" role="tab">
                             <i class="fab fa-ethereum me-1"></i> Pipeline
                         </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#alerts" data-bs-toggle="tab" role="tab">
+                            <i class="fas fa-bell me-1"></i> Gas Alerts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button id="dark-mode-toggle" class="btn btn-sm btn-outline-light ms-2" title="Toggle Dark Mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -463,7 +494,11 @@
                                     <span>Gas Used:</span>
                                     <span id="gas-used" class="fw-bold">--</span>
                                 </div>
-                                <div class="progress">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Block Utilization:</span>
+                                    <span id="gas-utilization" class="fw-bold">--</span>
+                                </div>
+                                <div class="progress mb-2">
                                     <div id="gas-used-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
@@ -491,7 +526,9 @@
                                 <i class="fas fa-chart-area me-2"></i> Gas Fee History
                             </div>
                             <div class="card-body">
-                                <div id="gas-fee-chart" style="height: 400px;"></div>
+                                <div class="chart-container">
+                                    <div id="gas-fee-chart" class="chart-inner" style="height: 400px;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -510,7 +547,9 @@
                                 <i class="fas fa-chart-bar me-2"></i> Hourly Gas Fee Pattern
                             </div>
                             <div class="card-body">
-                                <div id="hourly-pattern-chart" style="height: 300px;"></div>
+                                <div class="chart-container">
+                                    <div id="hourly-pattern-chart" class="chart-inner" style="height: 300px;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -520,7 +559,49 @@
                                 <i class="fas fa-chart-pie me-2"></i> Prediction Accuracy
                             </div>
                             <div class="card-body">
-                                <div id="prediction-accuracy-chart" style="height: 300px;"></div>
+                                <div class="chart-container">
+                                    <div id="prediction-accuracy-chart" class="chart-inner" style="height: 300px;"></div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body p-2 text-center">
+                                                <h6 class="card-title mb-1">Mean Absolute Error (MAE)</h6>
+                                                <p id="mae-value" class="display-6 mb-0 text-primary">0.0482</p>
+                                                <small class="text-muted">GWEI</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body p-2 text-center">
+                                                <h6 class="card-title mb-1">Root Mean Square Error</h6>
+                                                <p id="rmse-value" class="display-6 mb-0 text-primary">0.0497</p>
+                                                <small class="text-muted">GWEI</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body p-2 text-center">
+                                                <h6 class="card-title mb-1">Mean Absolute % Error</h6>
+                                                <p id="mape-value" class="display-6 mb-0 text-primary">0.21%</p>
+                                                <small class="text-muted">Lower is better</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body p-2 text-center">
+                                                <h6 class="card-title mb-1">Prediction Accuracy</h6>
+                                                <p id="accuracy-value" class="display-6 mb-0 text-success">99.79%</p>
+                                                <small class="text-muted">Higher is better</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -625,7 +706,9 @@
                                 <i class="fab fa-ethereum me-2"></i> Current Transaction Costs
                             </div>
                             <div class="card-body">
-                                <div id="current-costs-chart" style="height: 400px;"></div>
+                                <div class="chart-container">
+                                    <div id="current-costs-chart" class="chart-inner" style="height: 400px;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -635,7 +718,9 @@
                                 <i class="fab fa-ethereum me-2"></i> Predicted Transaction Costs
                             </div>
                             <div class="card-body">
-                                <div id="predicted-costs-chart" style="height: 400px;"></div>
+                                <div class="chart-container">
+                                    <div id="predicted-costs-chart" class="chart-inner" style="height: 400px;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -735,6 +820,106 @@
         </div>
     </div>
 
+    <!-- Gas Alerts Tab -->
+    <div class="tab-pane tab-alerts" id="alerts">
+        <div class="container">
+            <h2 class="mb-4 animate__animated animate__fadeInDown">Gas Fee Alerts</h2>
+            <div class="row">
+                <div class="col-md-6 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <i class="fas fa-bell me-2"></i> Set Gas Fee Alert
+                        </div>
+                        <div class="card-body">
+                            <form id="gas-alert-form">
+                                <div class="mb-3">
+                                    <label for="alert-threshold" class="form-label">Gas Fee Threshold (GWEI)</label>
+                                    <input type="number" class="form-control" id="alert-threshold" step="0.0001" min="0" placeholder="Enter threshold value (e.g., 20.5000)">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Alert Condition</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="alert-condition" id="alert-below" value="below" checked>
+                                        <label class="form-check-label" for="alert-below">
+                                            Alert when gas fee falls below threshold
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="alert-condition" id="alert-above" value="above">
+                                        <label class="form-check-label" for="alert-above">
+                                            Alert when gas fee rises above threshold
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alert-email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="alert-email" placeholder="your@email.com">
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="alert-sms">
+                                    <label class="form-check-label" for="alert-sms">Also send SMS alert</label>
+                                </div>
+                                <div class="mb-3" id="phone-container" style="display: none;">
+                                    <label for="alert-phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="alert-phone" placeholder="+1234567890">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alert-duration" class="form-label">Alert Duration</label>
+                                    <select class="form-select" id="alert-duration">
+                                        <option value="1">1 hour</option>
+                                        <option value="6">6 hours</option>
+                                        <option value="12">12 hours</option>
+                                        <option value="24" selected>24 hours</option>
+                                        <option value="48">48 hours</option>
+                                        <option value="168">1 week</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-bell me-2"></i> Set Alert
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <i class="fas fa-list-alt me-2"></i> Active Alerts
+                        </div>
+                        <div class="card-body">
+                            <div id="no-alerts" class="alert alert-info">
+                                You don't have any active gas fee alerts.
+                            </div>
+                            <div id="alerts-list" style="display: none;">
+                                <div class="list-group">
+                                    <!-- Alert items will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-4">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-info-circle me-2"></i> Current Gas Fee Status
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span>Current Gas Fee:</span>
+                                <span id="alert-current-fee" class="fw-bold">--</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span>Predicted in 1 hour:</span>
+                                <span id="alert-predicted-fee" class="fw-bold">--</span>
+                            </div>
+                            <div class="alert alert-success" id="alert-recommendation">
+                                Loading gas fee recommendation...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Back to Home Button -->
     <a href="/" class="back-to-home">
         <i class="fas fa-home"></i>
@@ -746,6 +931,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gas-alerts.js') }}"></script>
     <script>
         $(document).ready(function() {
             // Handle tab switching with animations

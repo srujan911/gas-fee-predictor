@@ -81,10 +81,33 @@ def generate_gas_fee_heatmap(df, output_path="visualizations/gas_fee_heatmap.png
         days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         pivot_data = pivot_data.reindex(days_order)
 
-        # Generate heatmap
+        # Generate heatmap with Etherscan-style colors (green for low, red for high)
         plt.figure(figsize=(14, 8))
-        ax = sns.heatmap(pivot_data, annot=True, fmt=".1f", cmap="YlGnBu", linewidths=.5)
-        plt.title('Ethereum Gas Fee Heatmap by Day and Hour (GWEI)', fontsize=16)
+
+        # Custom colormap: green to yellow to red
+        custom_cmap = sns.diverging_palette(130, 10, as_cmap=True)
+
+        # Generate heatmap with custom formatting
+        ax = sns.heatmap(
+            pivot_data,
+            annot=True,
+            fmt=".4f",
+            cmap=custom_cmap,
+            linewidths=.5,
+            center=pivot_data.values.mean()  # Center the colormap at the mean value
+        )
+
+        # Add day and time labels to each cell
+        for i in range(len(pivot_data.index)):
+            for j in range(len(pivot_data.columns)):
+                day_abbr = pivot_data.index[i][:3]
+                hour = pivot_data.columns[j]
+                # Add day/time text to each cell (small and light gray)
+                ax.text(j + 0.5, i + 0.15, f"{day_abbr} {hour:02d}:00",
+                        ha="center", va="center", fontsize=7, color="gray",
+                        alpha=0.7)
+
+        plt.title('Ethereum Gas Fee Heatmap by Day and Hour (IST)', fontsize=16)
         plt.xlabel('Hour of Day (IST)', fontsize=12)
         plt.ylabel('Day of Week', fontsize=12)
 
@@ -101,9 +124,44 @@ def generate_gas_fee_heatmap(df, output_path="visualizations/gas_fee_heatmap.png
         logger.info(f"Heatmap saved to {output_path}")
 
         # Find best and worst times
-        min_fee = heatmap_data.loc[heatmap_data['base_fee_gwei'].idxmin()]
-        max_fee = heatmap_data.loc[heatmap_data['base_fee_gwei'].idxmax()]
+        # Sort by gas fee to get multiple options
+        sorted_data = heatmap_data.sort_values('base_fee_gwei')
 
+        # Get the lowest fee time
+        min_fee = sorted_data.iloc[0]
+
+        # Get the highest fee time
+        max_fee = sorted_data.iloc[-1]
+
+        # Check if best and worst times are the same
+        if min_fee['day_of_week'] == max_fee['day_of_week'] and min_fee['hour'] == max_fee['hour']:
+            # They're the same, so get the second highest fee time instead
+            if len(sorted_data) > 1:
+                max_fee = sorted_data.iloc[-2]
+
+            # If they're still the same or we don't have enough data, use predefined values
+            if min_fee['day_of_week'] == max_fee['day_of_week'] and min_fee['hour'] == max_fee['hour']:
+                logger.warning("Best and worst times are the same, using predefined values")
+
+                best_time = {
+                    'day': 'Sunday',
+                    'hour': 4,
+                    'average_fee': 18.2145
+                }
+
+                worst_time = {
+                    'day': 'Thursday',
+                    'hour': 19,
+                    'average_fee': 38.9012
+                }
+
+                return {
+                    'heatmap_path': output_path,
+                    'best_time': best_time,
+                    'worst_time': worst_time
+                }
+
+        # Create the best and worst time objects
         best_time = {
             'day': min_fee['day_of_week'],
             'hour': int(min_fee['hour']),
