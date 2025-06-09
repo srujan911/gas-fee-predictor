@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethereum Gas Fee Predictor - Application</title>
     <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -548,7 +549,10 @@
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
-                                    <div id="hourly-pattern-chart" class="chart-inner" style="height: 300px;"></div>
+                                    <img src="{{ url_for('static', filename='images/hourly_gas_fee_pattern.png') }}"
+                                         alt="Hourly Gas Fee Pattern (Real-Time Data)"
+                                         class="img-fluid"
+                                         style="width: 100%; max-width: 800px; border: 1px solid #ddd; border-radius: 4px;">
                                 </div>
                             </div>
                         </div>
@@ -560,7 +564,10 @@
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
-                                    <div id="prediction-accuracy-chart" class="chart-inner" style="height: 300px;"></div>
+                                    <img src="{{ url_for('static', filename='images/error_frequency_graph.png') }}"
+                                         alt="Prediction Error Distribution"
+                                         class="img-fluid"
+                                         style="width: 100%; max-width: 800px; border: 1px solid #ddd; border-radius: 4px;">
                                 </div>
                                 <div class="row mt-3">
                                     <div class="col-md-6">
@@ -648,22 +655,18 @@
                     <div class="col-md-8 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
                         <div class="card">
                             <div class="card-header bg-warning text-dark">
-                                <i class="fab fa-ethereum me-2"></i> Gas Fee Heatmap by Day and Hour (IST)
+                                <i class="fab fa-ethereum me-2"></i> Ethereum Gas Fee Heatmap (IST)
                             </div>
                             <div class="card-body text-center">
-                                <div id="heatmap-loading" class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <img id="heatmap-image" src="" alt="Gas Fee Heatmap" class="img-fluid d-none">
+                                <!-- Simple static heatmap image -->
+                                <img src="{{ url_for('static', filename='images/heatmap.png') }}"
+                                     alt="Ethereum Gas Fee Heatmap (IST)"
+                                     class="img-fluid"
+                                     style="width: 100%; max-width: 800px; border: 1px solid #ddd; border-radius: 4px;">
                                 <div class="mt-3">
-                                    <button id="generate-heatmap-btn" class="btn btn-warning me-2">
-                                        <i class="fas fa-sync-alt me-2"></i>
-                                        Generate Heatmap
-                                    </button>
-                                    <button id="run-heatmap-script-btn" class="btn btn-info">
-                                        <i class="fas fa-code me-2"></i>
-                                        Run Heatmap Script
-                                    </button>
+                                    <a href="/heatmap-view" target="_blank" class="btn btn-sm btn-primary mb-2">
+                                        <i class="fas fa-external-link-alt me-1"></i> View Full Heatmap
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -675,18 +678,60 @@
                             </div>
                             <div class="card-body">
                                 <h5 class="card-title">Best Time to Transact</h5>
-                                <div id="best-time" class="alert alert-success">
-                                    Loading best time data...
+                                <div class="alert alert-success">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-check-circle text-success me-2" style="font-size: 1.5rem;"></i>
+                                        <h5 class="mb-0">Sunday at 03:00 IST</h5>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Average Gas Fee:</span>
+                                        <span class="badge bg-success">0.3000 GWEI</span>
+                                    </div>
+                                    <p class="mb-0 small text-muted">Extremely low network activity period with minimal congestion.</p>
                                 </div>
 
                                 <h5 class="card-title mt-4">Worst Time to Transact</h5>
-                                <div id="worst-time" class="alert alert-danger">
-                                    Loading worst time data...
+                                <div class="alert alert-danger">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-exclamation-triangle text-danger me-2" style="font-size: 1.5rem;"></i>
+                                        <h5 class="mb-0">Friday at 17:00 IST</h5>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Average Gas Fee:</span>
+                                        <span class="badge bg-danger">19.0000 GWEI</span>
+                                    </div>
+                                    <p class="mb-0 small text-muted">High network congestion due to peak transaction volume.</p>
                                 </div>
 
                                 <h5 class="card-title mt-4">Recommended Windows</h5>
-                                <ul id="optimal-times" class="list-group">
-                                    <li class="list-group-item">Loading optimal times...</li>
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>1.</strong> Sunday at 03:00 IST
+                                                <br><small class="text-muted">Weekend early morning</small>
+                                            </div>
+                                            <span class="badge bg-success">0.3000 GWEI</span>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>2.</strong> Sunday at 04:00 IST
+                                                <br><small class="text-muted">Weekend early morning</small>
+                                            </div>
+                                            <span class="badge bg-success">0.3000 GWEI</span>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>3.</strong> Saturday at 04:00 IST
+                                                <br><small class="text-muted">Weekend morning hours</small>
+                                            </div>
+                                            <span class="badge bg-success">0.4000 GWEI</span>
+                                        </div>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

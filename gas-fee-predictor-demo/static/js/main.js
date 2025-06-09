@@ -1,6 +1,6 @@
 /*
    Ethereum Gas Fee Predictor - Main JavaScript
-   Author: SRUJANJAINI
+   Author: SRUJAN.J
    Date: April 2025
 */
 
@@ -70,10 +70,23 @@ function initApp() {
     // Handle tab switching with animations
     $('.nav-link[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
         const targetId = $(e.target).attr('href');
+
+        // Apply animations to elements in the tab
         $(targetId).find('[data-animation]').each(function() {
             const animationClass = $(this).data('animation');
             $(this).removeClass(animationClass).addClass('animate__animated').addClass(animationClass);
         });
+
+        // When switching to the gas alerts tab, make sure we have the latest data
+        if (targetId === '#gas-alerts') {
+            console.log("Gas alerts tab shown, ensuring data consistency");
+            // If we have global gas fee data, make sure the gas alerts tab uses it
+            if (window.gasFeeData) {
+                console.log("Using global gas fee data for alerts tab:", window.gasFeeData);
+                // Force a refresh of the gas alerts data
+                loadGasDataForAlerts();
+            }
+        }
     });
 }
 
@@ -102,7 +115,30 @@ function setupEventListeners() {
     // Pipeline form submission
     $('#pipeline-form').on('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         runPipeline();
+        return false; // Prevent form submission
+    });
+
+    // Add click handler for heatmap tab to ensure heatmap is loaded when tab is clicked
+    $('.nav-link[href="#heatmap"]').on('click', function() {
+        console.log("Heatmap tab clicked");
+        loadHeatmap();
+    });
+
+    // Gas alert form submission
+    $('#gas-alert-form').on('submit', function(e) {
+        e.preventDefault();
+        setGasAlert();
+    });
+
+    // SMS checkbox change
+    $('#alert-sms').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#phone-container').show();
+        } else {
+            $('#phone-container').hide();
+        }
     });
 }
 
@@ -119,6 +155,27 @@ function loadInitialData() {
 
     // Calculate transaction costs
     calculateTransactionCosts();
+}
+
+// Function to load heatmap directly
+function loadHeatmap() {
+    console.log("Loading heatmap directly");
+
+    // Set the image source directly to the static file with a cache-busting parameter
+    const imgPath = '/static/images/gas_fee_heatmap.png?t=' + new Date().getTime();
+
+    // Update the image source
+    $('#heatmap-image').attr('src', imgPath);
+
+    // Also update the optimal times
+    updateOptimalTimes();
+
+    // Make sure the heatmap tab is properly initialized when clicked
+    $('.nav-link[href="#heatmap"]').on('shown.bs.tab', function (e) {
+        console.log("Heatmap tab shown");
+        // Force image refresh
+        $('#heatmap-image').attr('src', '/static/images/gas_fee_heatmap.png?t=' + new Date().getTime());
+    });
 }
 
 // Make gas fee prediction
@@ -142,6 +199,19 @@ function makePrediction() {
             console.log("Prediction response received:", response);
             if (response.success) {
                 updatePredictionUI(response.prediction);
+
+                // If gas alerts tab is visible, update it with the same data
+                if ($('#gas-alerts').is(':visible')) {
+                    console.log("Gas alerts tab is visible, updating with same prediction data");
+                    // Update the gas alerts tab with the same prediction data
+                    $('#alert-current-fee').text(response.prediction.current_fee.toFixed(4) + ' GWEI');
+                    $('#alert-predicted-fee').text(response.prediction.predicted_fee.toFixed(4) + ' GWEI');
+
+                    // Call the gas alerts update function with the same data
+                    if (typeof updateAlertRecommendation === 'function') {
+                        updateAlertRecommendation(response.prediction);
+                    }
+                }
             } else {
                 console.error('Prediction failed:', response.error);
                 $('#predict-btn').prop('disabled', false).html('<i class="fas fa-sync-alt me-2"></i> Update Prediction');
@@ -164,6 +234,13 @@ function makePrediction() {
 
 // Update prediction UI with new data
 function updatePredictionUI(prediction) {
+    // Debug: Log prediction data to console
+    console.log("Main Dashboard - Prediction Data:", prediction);
+    console.log("Main Dashboard - Current Fee:", prediction.current_fee);
+    console.log("Main Dashboard - Predicted Fee:", prediction.predicted_fee);
+    console.log("Main Dashboard - Difference:", prediction.difference);
+    console.log("Main Dashboard - Percent Change:", prediction.percent_change);
+
     // Update current fee
     $('#current-fee').text(prediction.current_fee.toFixed(4));
     $('#current-block').text('Block: ' + prediction.block_number);
@@ -176,12 +253,25 @@ function updatePredictionUI(prediction) {
     const changeValue = prediction.difference.toFixed(4);
     const changePercent = prediction.percent_change.toFixed(4);
 
-    if (prediction.difference > 0) {
+    // Store the trend in a global variable for other components to access
+    window.gasFeeData = {
+        currentFee: prediction.current_fee,
+        predictedFee: prediction.predicted_fee,
+        difference: prediction.difference,
+        percentChange: prediction.percent_change,
+        trend: prediction.trend || (prediction.difference > 0 ? 'increasing' : (prediction.difference < 0 ? 'decreasing' : 'stable'))
+    };
+
+    // Always use the trend from the backend
+    const trend = prediction.trend;
+    console.log("Main Dashboard - Using trend from backend:", trend);
+
+    if (trend === 'increasing') {
         $('#change-value').html(`<i class="fas fa-arrow-up"></i> +${changeValue} GWEI`).addClass('increase').removeClass('decrease');
         $('#change-percent').html(`(+${changePercent}%)`).addClass('increase').removeClass('decrease');
         $('#current-trend').html('Gas fees are <strong>increasing</strong>. The predicted fee is higher than the current fee.');
         $('#transaction-recommendation').html('Consider executing urgent transactions now before fees increase further.');
-    } else if (prediction.difference < 0) {
+    } else if (trend === 'decreasing') {
         $('#change-value').html(`<i class="fas fa-arrow-down"></i> ${changeValue} GWEI`).addClass('decrease').removeClass('increase');
         $('#change-percent').html(`(${changePercent}%)`).addClass('decrease').removeClass('increase');
         $('#current-trend').html('Gas fees are <strong>decreasing</strong>. The predicted fee is lower than the current fee.');
@@ -611,26 +701,32 @@ function updateHeatmapUI(data) {
     };
     img.src = imgPath;
 
+    // Update optimal times
+    updateOptimalTimes(data);
+}
+
+// Function to update optimal times
+function updateOptimalTimes(data) {
     // Define best and worst times based on online data sources
     // These values are based on Etherscan and other gas trackers
     const bestTimeData = {
-        day: 'Sunday',
-        hour: 4,
-        average_fee: 18.2145,
-        explanation: 'Weekend early mornings (IST) consistently show the lowest gas fees due to reduced global activity, especially when US markets are closed and before Asian markets become active.'
+        day: 'Friday',
+        hour: 16,
+        average_fee: 0.8483,
+        explanation: 'Low network activity period with minimal congestion.'
     };
 
     const worstTimeData = {
-        day: 'Thursday',
+        day: 'Friday',
         hour: 19,
-        average_fee: 38.9012,
-        explanation: 'Weekday evenings (IST) typically have the highest gas fees due to peak activity in US markets and increased DeFi/NFT trading volume globally.'
+        average_fee: 2.2215,
+        explanation: 'High network congestion due to peak transaction volume.'
     };
 
     // Check if API data is available and if best and worst times are different
     let bestTime, worstTime;
 
-    if (data.best_time && data.worst_time) {
+    if (data && data.best_time && data.worst_time) {
         // Check if API returned the same time for best and worst (which is the issue)
         if (data.best_time.day === data.worst_time.day && data.best_time.hour === data.worst_time.hour) {
             console.log("API returned same time for best and worst, using predefined data instead");
@@ -673,9 +769,6 @@ function updateHeatmapUI(data) {
         <p class="mb-0 small text-muted">${worstTime.explanation || 'High network congestion due to peak transaction volume.'}</p>
     `);
 
-    // Update optimal times with enhanced data from online sources
-    // This combines real data with known patterns from Etherscan and other gas trackers
-
     // Create realistic optimal times based on global patterns
     const optimalTimes = [
         { day: 'Sunday', hour: 4, fee: 18.2145, note: 'Lowest activity globally' },
@@ -687,7 +780,7 @@ function updateHeatmapUI(data) {
 
     // Use data from API if available, otherwise use our enhanced data
     let timesToShow = [];
-    if (data.optimal_times && data.optimal_times.length > 0) {
+    if (data && data.optimal_times && data.optimal_times.length > 0) {
         // Combine API data with our enhanced data
         timesToShow = data.optimal_times.map((time, index) => {
             // Find matching enhanced data if available
@@ -724,9 +817,6 @@ function updateHeatmapUI(data) {
     });
 
     $('#optimal-times').html(optimalTimesHtml);
-
-    // Re-enable heatmap button
-    $('#generate-heatmap-btn').prop('disabled', false).html('<i class="fas fa-sync-alt me-2"></i> Generate Heatmap');
 }
 
 // Calculate transaction costs
@@ -875,6 +965,10 @@ function runPipeline() {
 
                 // Reload data after pipeline completes
                 loadInitialData();
+
+                // Stay on the pipeline tab instead of redirecting
+                // Make sure the pipeline tab is active
+                $('.nav-link[href="#pipeline"]').tab('show');
             } else {
                 updatePipelineUI(false, response.error);
             }
@@ -887,6 +981,9 @@ function runPipeline() {
 
     // Simulate pipeline progress (since we don't have real-time updates)
     simulatePipelineProgress();
+
+    // Prevent any default form submission that might cause page navigation
+    return false;
 }
 
 // Update pipeline UI

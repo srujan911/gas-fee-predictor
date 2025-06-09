@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""
-Ethereum Gas Fee Predictor - Data Cleaning Script
-
-This script cleans and preprocesses the raw Ethereum gas fee data collected from the blockchain.
-It handles missing values, duplicates, timestamp conversion, and outlier detection.
-
-Author: SRUJANJAINI
-Date: April 2025
-"""
 
 import os
 import pandas as pd
@@ -16,7 +6,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -43,12 +32,8 @@ def handle_missing_values(df):
     try:
         logger.info("Handling missing values")
         initial_shape = df.shape
-
-        # Check for missing values
         missing_values = df.isnull().sum()
         logger.info(f"Missing values per column:\n{missing_values}")
-
-        # Drop rows with any missing values
         df.dropna(inplace=True)
         logger.info(f"After dropping missing values, shape: {df.shape}")
         logger.info(f"Removed {initial_shape[0] - df.shape[0]} rows with missing values")
@@ -63,8 +48,6 @@ def handle_duplicates(df):
     try:
         logger.info("Removing duplicate rows")
         initial_shape = df.shape
-
-        # Drop duplicate rows
         df.drop_duplicates(inplace=True)
         logger.info(f"After dropping duplicates, shape: {df.shape}")
         logger.info(f"Removed {initial_shape[0] - df.shape[0]} duplicate rows")
@@ -78,17 +61,12 @@ def convert_timestamps(df):
     """Convert timestamp strings to datetime objects."""
     try:
         logger.info("Converting timestamp column to datetime")
-
-        # Convert timestamp column to datetime
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors='coerce')
-
-        # Drop rows with invalid timestamps
         initial_shape = df.shape
         df.dropna(subset=["timestamp"], inplace=True)
         logger.info(f"After removing invalid timestamps, shape: {df.shape}")
         logger.info(f"Removed {initial_shape[0] - df.shape[0]} rows with invalid timestamps")
 
-        # Preview converted timestamps
         logger.info(f"Timestamp conversion preview: {df['timestamp'].head()}")
 
         return df
@@ -161,14 +139,12 @@ def sort_and_save_data(df, output_path="data/gas_fees_cleaned.csv"):
             logger.warning("No data to save after cleaning")
             return False
 
-        # Create directory for output if it doesn't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         logger.info(f"Saving cleaned data to: {output_path}")
         df.to_csv(output_path, index=False)
         logger.info(f"Cleaned data saved successfully with shape: {df.shape}")
 
-        # Generate summary statistics
         stats_path = os.path.join(os.path.dirname(output_path), "gas_fees_stats.txt")
         with open(stats_path, 'w') as f:
             f.write("Gas Fee Data Summary Statistics\n")
@@ -187,22 +163,11 @@ def sort_and_save_data(df, output_path="data/gas_fees_cleaned.csv"):
 def clean_gas_data(input_path="data/gas_fees.csv", output_path="data/gas_fees_cleaned.csv"):
     """Main function to clean the gas fee data."""
     try:
-        # Load data
         df = load_data(input_path)
-
-        # Handle missing values
         df = handle_missing_values(df)
-
-        # Handle duplicates
         df = handle_duplicates(df)
-
-        # Convert timestamps
         df = convert_timestamps(df)
-
-        # Detect and handle outliers
         df = detect_outliers(df, column="base_fee_gwei")
-
-        # Sort and save data
         success = sort_and_save_data(df, output_path)
 
         if success:

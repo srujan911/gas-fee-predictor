@@ -1,15 +1,3 @@
-#!/usr/bin/env python3
-"""
-Ethereum Gas Fee Predictor - Improved Gas Fee Prediction
-
-This script provides improved gas fee predictions by:
-1. Using a weighted ensemble approach
-2. Incorporating recent trends
-3. Applying adaptive correction based on prediction error
-
-Author: SRUJANJAINI
-Date: April 2025
-"""
 
 import joblib
 import os
@@ -21,7 +9,6 @@ from dotenv import load_dotenv
 import logging
 import time
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -38,8 +25,6 @@ def load_model(model_path="models/gas_fee_model.pkl"):
 
         logger.info(f"Loading model from {model_path}")
         model_data = joblib.load(model_path)
-
-        # Check if the model is a tuple (model, scaler)
         if isinstance(model_data, tuple) and len(model_data) == 2:
             model, scaler = model_data
             logger.info("Model and scaler loaded successfully")
@@ -54,7 +39,6 @@ def load_model(model_path="models/gas_fee_model.pkl"):
 def connect_to_ethereum():
     """Connect to the Ethereum network."""
     try:
-        # Load environment variables
         load_dotenv()
         infura_url = os.getenv("ETHEREUM_NODE_URL",
                               "https://mainnet.infura.io/v3/48217549432b45008a27d82627742b5b")
@@ -83,8 +67,6 @@ def get_recent_blocks(web3, num_blocks=10):
             block_number = latest_block_number - i
             try:
                 block = web3.eth.get_block(block_number, full_transactions=True)
-
-                # Extract block data
                 block_data = {
                     "timestamp": int(block["timestamp"]),
                     "block_number": int(block["number"]),
@@ -112,12 +94,8 @@ def calculate_gas_fee_trend(blocks_data):
         if len(blocks_data) < 2:
             logger.warning("Not enough blocks to calculate trend")
             return 0
-
-        # Extract base fees and calculate differences
         base_fees = [block["base_fee_gwei"] for block in blocks_data]
         differences = [base_fees[i] - base_fees[i+1] for i in range(len(base_fees)-1)]
-
-        # Calculate weighted average of differences (more recent blocks have higher weight)
         weights = [1/(i+1) for i in range(len(differences))]
         weight_sum = sum(weights)
         normalized_weights = [w/weight_sum for w in weights]
@@ -134,8 +112,6 @@ def predict_with_model(model, scaler, block_data):
     """Make a prediction using the trained model."""
     try:
         logger.info("Making model-based prediction")
-
-        # Create DataFrame with features
         X_new = pd.DataFrame([{
             "timestamp": block_data["timestamp"],
             "block_number": block_data["block_number"],
@@ -143,14 +119,8 @@ def predict_with_model(model, scaler, block_data):
             "gas_limit": block_data["gas_limit"],
             "tx_count": block_data["tx_count"]
         }])
-
-        # Scale features
         X_scaled = scaler.transform(X_new)
-
-        # Make prediction
         predicted_fee = model.predict(X_scaled)[0]
-
-        # Ensure prediction is non-negative
         predicted_fee = max(predicted_fee, 0)
 
         logger.info(f"Model prediction: {predicted_fee:.2f} GWEI")
@@ -163,17 +133,11 @@ def predict_with_eip1559(current_fee, gas_used, gas_limit, target_gas_ratio=0.5)
     """Predict gas fee using EIP-1559 formula."""
     try:
         logger.info("Making EIP-1559 based prediction")
-
-        # Calculate gas usage ratio
         gas_ratio = gas_used / gas_limit
-
-        # Apply EIP-1559 formula
         if gas_ratio > target_gas_ratio:
-            # Increase by up to 12.5% if block is more than half full
             increase_factor = min(1.125, 1 + 0.25 * (gas_ratio - target_gas_ratio) / (1 - target_gas_ratio))
             predicted_fee = current_fee * increase_factor
         else:
-            # Decrease by up to 12.5% if block is less than half full
             decrease_factor = max(0.875, 1 - 0.25 * (target_gas_ratio - gas_ratio) / target_gas_ratio)
             predicted_fee = current_fee * decrease_factor
 
@@ -190,7 +154,6 @@ def load_prediction_history():
         if os.path.exists(history_path):
             history = pd.read_csv(history_path)
             if len(history) > 0:
-                # Calculate average error
                 history["error"] = history["real_fee"] - history["predicted_fee"]
                 avg_error = history["error"].mean()
                 logger.info(f"Loaded prediction history with average error: {avg_error:.2f} GWEI")
@@ -204,23 +167,17 @@ def save_prediction(predicted_fee, real_fee):
     """Save prediction and real fee for future correction."""
     history_path = "data/prediction_history.csv"
     try:
-        # Create DataFrame with new prediction
         new_prediction = pd.DataFrame([{
             "timestamp": datetime.now().isoformat(),
             "predicted_fee": predicted_fee,
             "real_fee": real_fee,
             "error": real_fee - predicted_fee
         }])
-
-        # Append to existing history or create new file
         if os.path.exists(history_path):
             history = pd.read_csv(history_path)
-            # Keep only last 100 predictions
             history = pd.concat([history, new_prediction]).tail(100)
         else:
             history = new_prediction
-
-        # Save to CSV
         os.makedirs(os.path.dirname(history_path), exist_ok=True)
         history.to_csv(history_path, index=False)
         logger.info(f"Saved prediction to history")
@@ -230,33 +187,18 @@ def save_prediction(predicted_fee, real_fee):
 def predict_gas_fee(web3, model, scaler):
     """Predict the next gas fee using multiple approaches."""
     try:
-        # Get recent blocks
         blocks_data = get_recent_blocks(web3, num_blocks=10)
         if not blocks_data:
             raise ValueError("Failed to retrieve block data")
-
-        # Get current block data (most recent block)
         current_block = blocks_data[0]
-
-        # Calculate gas fee trend
         trend = calculate_gas_fee_trend(blocks_data)
-
-        # Make model-based prediction
         model_prediction = predict_with_model(model, scaler, current_block)
-
-        # Make EIP-1559 based prediction
         eip1559_prediction = predict_with_eip1559(
             current_block["base_fee_gwei"],
             current_block["gas_used"],
             current_block["gas_limit"]
         )
-
-        # Load historical prediction error for correction
         avg_error = load_prediction_history()
-
-        # Create a more realistic model that keeps errors within 0.05 GWEI range
-        # Use a balanced approach with real data
-        # 75% current fee, 10% model, 10% EIP-1559, 5% trend-based
         combined_prediction = (
             0.75 * current_block["base_fee_gwei"] +
             0.10 * model_prediction +
@@ -264,31 +206,19 @@ def predict_gas_fee(web3, model, scaler):
             0.05 * (current_block["base_fee_gwei"] + trend)
         )
 
-        # Apply error correction based on historical accuracy
         corrected_prediction = combined_prediction + (avg_error * 0.15)
-
-        # Add small random variation to make predictions more realistic
-        # But ensure they stay within 0.05 GWEI range of what would be expected
         import random
-        random_factor = random.uniform(-0.03, 0.03)  # Random value between -0.03 and 0.03 GWEI
+        random_factor = random.uniform(-0.03, 0.03)  
         corrected_prediction += random_factor
-
-        # Soft limit to keep predictions generally within 0.05 GWEI range
-        # but allow occasional slightly larger deviations for realism
         max_deviation = 0.05
         if abs(corrected_prediction - current_block["base_fee_gwei"]) > max_deviation * 1.2:
-            # Apply a soft correction that brings it closer to the range
             if corrected_prediction > current_block["base_fee_gwei"]:
                 corrected_prediction = current_block["base_fee_gwei"] + max_deviation * (0.8 + random.uniform(0, 0.4))
             else:
                 corrected_prediction = current_block["base_fee_gwei"] - max_deviation * (0.8 + random.uniform(0, 0.4))
-
-        # Ensure prediction is non-negative
         final_prediction = max(corrected_prediction, 0)
 
         logger.info(f"Final prediction: {final_prediction:.2f} GWEI")
-
-        # Save prediction for future reference
         save_prediction(final_prediction, current_block["base_fee_gwei"])
 
         return final_prediction, current_block
@@ -299,10 +229,7 @@ def predict_gas_fee(web3, model, scaler):
 def display_results(block_data, predicted_fee, model_prediction=None, eip1559_prediction=None, trend=None):
     """Display the block data and prediction results."""
     try:
-        # Convert timestamp to datetime with proper timezone handling
         timestamp_utc = datetime.fromtimestamp(block_data["timestamp"], tz=timezone.utc)
-
-        # Display results
         print("\n" + "=" * 60)
         print("🔮 IMPROVED ETHEREUM GAS FEE PREDICTION 🔮")
         print("=" * 60)
@@ -327,8 +254,6 @@ def display_results(block_data, predicted_fee, model_prediction=None, eip1559_pr
 
         print("-" * 60)
         print(f"🔮 Final Predicted Next Base Fee: {predicted_fee:.2f} GWEI")
-
-        # Calculate and display difference
         difference = predicted_fee - block_data['base_fee_gwei']
         percent_change = (difference / block_data['base_fee_gwei']) * 100 if block_data['base_fee_gwei'] > 0 else 0
         print(f"📊 Expected Change: {difference:+.2f} GWEI ({percent_change:+.1f}%)")
@@ -340,69 +265,38 @@ def display_results(block_data, predicted_fee, model_prediction=None, eip1559_pr
 def main():
     """Main function to predict gas fees."""
     try:
-        # Load model and scaler
         model, scaler = load_model()
-
-        # Connect to Ethereum
         web3 = connect_to_ethereum()
-
-        # Get recent blocks
         blocks_data = get_recent_blocks(web3, num_blocks=10)
         if not blocks_data:
             raise ValueError("Failed to retrieve block data")
-
-        # Get current block data (most recent block)
         current_block = blocks_data[0]
-
-        # Calculate gas fee trend
         trend = calculate_gas_fee_trend(blocks_data)
-
-        # Make model-based prediction
         model_prediction = predict_with_model(model, scaler, current_block)
-
-        # Make EIP-1559 based prediction
         eip1559_prediction = predict_with_eip1559(
             current_block["base_fee_gwei"],
             current_block["gas_used"],
             current_block["gas_limit"]
         )
-
-        # Load historical prediction error for correction
         avg_error = load_prediction_history()
-
-        # Create a more realistic model that keeps errors within 0.05 GWEI range
-        # Use a balanced approach with real data
-        # 75% current fee, 10% model, 10% EIP-1559, 5% trend-based
         combined_prediction = (
             0.75 * current_block["base_fee_gwei"] +
             0.10 * model_prediction +
             0.10 * eip1559_prediction +
             0.05 * (current_block["base_fee_gwei"] + trend)
         )
-
-        # Apply error correction based on historical accuracy
         corrected_prediction = combined_prediction + (avg_error * 0.15)
-
-        # Add small random variation to make predictions more realistic
-        # But ensure they stay within 0.05 GWEI range of what would be expected
         import random
-        random_factor = random.uniform(-0.03, 0.03)  # Random value between -0.03 and 0.03 GWEI
+        random_factor = random.uniform(-0.03, 0.03)  
         corrected_prediction += random_factor
-
-        # Soft limit to keep predictions generally within 0.05 GWEI range
-        # but allow occasional slightly larger deviations for realism
         max_deviation = 0.05
         if abs(corrected_prediction - current_block["base_fee_gwei"]) > max_deviation * 1.2:
-            # Apply a soft correction that brings it closer to the range
             if corrected_prediction > current_block["base_fee_gwei"]:
                 corrected_prediction = current_block["base_fee_gwei"] + max_deviation * (0.8 + random.uniform(0, 0.4))
             else:
                 corrected_prediction = current_block["base_fee_gwei"] - max_deviation * (0.8 + random.uniform(0, 0.4))
 
-        # Ensure prediction is non-negative
         final_prediction = max(corrected_prediction, 0)
-
-        # Display results with all prediction components
         display_results(
             current_block,
             final_prediction,
@@ -410,8 +304,6 @@ def main():
             eip1559_prediction,
             trend
         )
-
-        # Save prediction for future reference
         save_prediction(final_prediction, current_block["base_fee_gwei"])
 
         return 0
@@ -423,20 +315,11 @@ def main():
 def predict_and_save(use_improved=True):
     """Predict gas fee and save the results to a file."""
     try:
-        # Load model and scaler
         model, scaler = load_model()
-
-        # Connect to Ethereum
         web3 = connect_to_ethereum()
-
-        # Make prediction
         predicted_fee, block_data = predict_gas_fee(web3, model, scaler)
-
-        # Save to CSV
         output_path = "data/latest_prediction.csv"
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-        # Create DataFrame with prediction
         prediction_df = pd.DataFrame([{
             "timestamp": datetime.now().isoformat(),
             "block_number": block_data["block_number"],
@@ -446,8 +329,6 @@ def predict_and_save(use_improved=True):
             "gas_limit": block_data["gas_limit"],
             "tx_count": block_data["tx_count"]
         }])
-
-        # Save to CSV
         prediction_df.to_csv(output_path, index=False)
         logger.info(f"Saved prediction to {output_path}")
 

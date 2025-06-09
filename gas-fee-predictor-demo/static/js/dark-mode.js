@@ -1,6 +1,6 @@
 /**
  * Dark Mode Toggle for Ethereum Gas Fee Predictor
- * Author: SRUJANJAINI
+ * Author: SRUJAN.J
  * Date: April 2025
  */
 

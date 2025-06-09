@@ -5,7 +5,7 @@ Ethereum Gas Fee Predictor - Faculty Demonstration Script
 This script provides an easy way to run the gas fee prediction pipeline
 with a configurable number of blocks for faculty demonstrations.
 
-Author: SRUJANJAINI
+Author: SRUJAN.J
 Date: April 2025
 """
 
@@ -225,7 +225,7 @@ def create_visualization_html():
         </div>
 
         <div class="footer">
-            <p>Ethereum Gas Fee Predictor - Created by SRUJANJAINI</p>
+            <p>Ethereum Gas Fee Predictor - Created by SRUJAN.J</p>
             <p>Generated on: """ + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + """</p>
         </div>
     </body>

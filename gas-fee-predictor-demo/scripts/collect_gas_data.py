@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-"""
-Ethereum Gas Fee Predictor - Data Collection Script
-
-This script connects to the Ethereum blockchain via Infura and collects gas fee data
-from recent blocks. It retrieves block information including timestamps, gas usage,
-and transaction counts, then saves the data to a CSV file for further processing.
-
-Author: SRUJANJAINI
-Date: April 2025
-"""
 
 import pandas as pd
 from web3 import Web3
@@ -21,7 +10,6 @@ from datetime import datetime, timezone
 import logging
 import sys
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -36,7 +24,7 @@ logger = logging.getLogger(__name__)
 def connect_to_ethereum():
     """Connect to the Ethereum network using Infura."""
     try:
-        # Load environment variables
+    
         load_dotenv()
         eth_node = os.getenv("ETHEREUM_NODE_URL")
 
@@ -70,48 +58,34 @@ def collect_block_data(web3, n=100, delay=1.0, output_path="data/gas_fees.csv", 
     """
     try:
         logger.info(f"Starting collection of {n} blocks with {delay}s delay")
-
-        # Get latest block number
         latest_block = web3.eth.block_number
         logger.info(f"Latest block number: {latest_block}")
-
-        # Initialize data list
         data = []
         successful_blocks = 0
         failed_blocks = 0
-
-        # Create progress tracking variables
         start_time = time.time()
-
-        # Collect data from blocks
         for i in range(latest_block - n, latest_block):
             try:
-                # Get block data
+            
                 block = web3.eth.get_block(i, full_transactions=True)
-
-                # Convert timestamp to datetime with timezone
                 timestamp_utc = datetime.fromtimestamp(block.timestamp, tz=timezone.utc)
-
-                # Convert to specified timezone
                 if tz_name.upper() != "UTC":
                     timestamp_local = timestamp_utc.astimezone(pytz.timezone(tz_name))
                 else:
                     timestamp_local = timestamp_utc
 
-                # Extract block data
                 block_data = {
-                    "block_number": int(block.number),  # Ensure block number is an integer
+                    "block_number": int(block.number),  
                     "timestamp": timestamp_utc.isoformat(),
                     f"timestamp_{tz_name.lower()}": timestamp_local.isoformat(),
                     "base_fee_gwei": float(block.baseFeePerGas) / 1e9 if hasattr(block, 'baseFeePerGas') else None,
-                    "gas_used": int(block.gasUsed),  # Ensure gas_used is an integer
-                    "gas_limit": int(block.gasLimit),  # Ensure gas_limit is an integer
+                    "gas_used": int(block.gasUsed),  
+                    "gas_limit": int(block.gasLimit),  
                     "tx_count": len(block.transactions),
-                    "gas_used_ratio": float(block.gasUsed) / float(block.gasLimit),  # Calculate ratio from integers
+                    "gas_used_ratio": float(block.gasUsed) / float(block.gasLimit),  
                 }
 
-                # Add transaction type counts if available
-                tx_types = {0: 0, 1: 0, 2: 0}  # Legacy, EIP-2930, EIP-1559
+                tx_types = {0: 0, 1: 0, 2: 0}  
                 for tx in block.transactions:
                     tx_type = tx.get('type', 0)
                     tx_types[tx_type] = tx_types.get(tx_type, 0) + 1
@@ -122,11 +96,9 @@ def collect_block_data(web3, n=100, delay=1.0, output_path="data/gas_fees.csv", 
                     "eip1559_tx_count": tx_types.get(2, 0),
                 })
 
-                # Append to data list
+        
                 data.append(block_data)
                 successful_blocks += 1
-
-                # Log progress
                 if i % 10 == 0 or i == latest_block - 1:
                     elapsed = time.time() - start_time
                     blocks_per_second = successful_blocks / max(elapsed, 0.1)
@@ -135,20 +107,13 @@ def collect_block_data(web3, n=100, delay=1.0, output_path="data/gas_fees.csv", 
                 else:
                     logger.debug(f"Collected block {i}")
 
-                # Delay to avoid rate limiting
                 time.sleep(delay)
 
             except Exception as e:
                 logger.warning(f"Error at block {i}: {e}")
                 failed_blocks += 1
-
-        # Create DataFrame from collected data
         df = pd.DataFrame(data)
-
-        # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-        # Save data to CSV
         try:
             df.to_csv(output_path, index=False, encoding="utf-8")
             logger.info(f"Data saved to {output_path}")
@@ -156,13 +121,11 @@ def collect_block_data(web3, n=100, delay=1.0, output_path="data/gas_fees.csv", 
             logger.error(f"Error saving CSV: {e}")
             raise
 
-        # Log collection summary
+    
         total_time = time.time() - start_time
         logger.info(f"Collection completed in {total_time:.2f} seconds")
         logger.info(f"Successful blocks: {successful_blocks}, Failed blocks: {failed_blocks}")
         logger.info(f"Average collection rate: {successful_blocks / max(total_time, 0.1):.2f} blocks/s")
-
-        # Print summary for user
         print("\n" + "=" * 50)
         print("🔮 ETHEREUM GAS FEE DATA COLLECTION 🔮")
         print("=" * 50)
@@ -195,15 +158,11 @@ def collect_ethereum_gas_data(num_blocks=1000, timezone="UTC"):
     """Function to collect Ethereum gas data for the pipeline."""
     try:
         logger.info(f"Collecting {num_blocks} blocks of Ethereum gas data with timezone {timezone}")
-
-        # Connect to Ethereum
         web3 = connect_to_ethereum()
-
-        # Collect block data
         collect_block_data(
             web3,
             n=num_blocks,
-            delay=0.5,  # Faster delay for pipeline
+            delay=0.5,  
             output_path="data/gas_fees.csv",
             tz_name=timezone
         )
@@ -217,13 +176,8 @@ def collect_ethereum_gas_data(num_blocks=1000, timezone="UTC"):
 def main():
     """Main function to run the data collection."""
     try:
-        # Parse command line arguments
         args = parse_arguments()
-
-        # Connect to Ethereum
         web3 = connect_to_ethereum()
-
-        # Collect block data
         collect_block_data(
             web3,
             n=args.num_blocks,

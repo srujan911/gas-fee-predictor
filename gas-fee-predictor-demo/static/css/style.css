@@ -1,6 +1,6 @@
-/* 
+/*
    Ethereum Gas Fee Predictor - Custom CSS
-   Author: SRUJANJAINI
+   Author: SRUJAN.J
    Date: April 2025
 */
 
@@ -129,7 +129,7 @@ section h2 {
     .card {
         margin-bottom: 20px;
     }
-    
+
     #current-fee, #predicted-fee {
         font-size: 2.5rem;
     }

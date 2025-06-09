@@ -46,13 +46,17 @@ function setupEventListeners() {
 
 // Load current gas fee data for alerts tab
 function loadGasDataForAlerts() {
-    // Fetch current gas fee data
+    // Always make a fresh prediction request to ensure consistency
     $.ajax({
         url: '/predict',
-        method: 'GET',
+        method: 'POST', // Use POST to force a new prediction
+        contentType: 'application/json',
+        data: JSON.stringify({}),
         dataType: 'json',
         success: function(data) {
             if (data.success) {
+                console.log("Fresh prediction data for gas alerts tab:", data.prediction);
+
                 // Update current fee display with 4 decimal places
                 $('#alert-current-fee').text(data.prediction.current_fee.toFixed(4) + ' GWEI');
 
@@ -64,46 +68,170 @@ function loadGasDataForAlerts() {
 
                 // Check active alerts against current gas fee
                 checkActiveAlerts(data.prediction.current_fee);
+
+                // Store this data globally for other components to use
+                window.gasFeeData = {
+                    currentFee: data.prediction.current_fee,
+                    predictedFee: data.prediction.predicted_fee,
+                    difference: data.prediction.difference,
+                    percentChange: data.prediction.percent_change,
+                    trend: data.prediction.difference > 0 ? 'increasing' : (data.prediction.difference < 0 ? 'decreasing' : 'stable')
+                };
             }
         },
         error: function() {
-            $('#alert-recommendation').removeClass('alert-success').addClass('alert-danger')
-                .html('<i class="fas fa-exclamation-circle me-2"></i> Failed to load gas fee data. Please try again later.');
+            // If POST fails, try GET as fallback
+            $.ajax({
+                url: '/predict',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        // Update current fee display with 4 decimal places
+                        $('#alert-current-fee').text(data.prediction.current_fee.toFixed(4) + ' GWEI');
+
+                        // Update predicted fee display with 4 decimal places
+                        $('#alert-predicted-fee').text(data.prediction.predicted_fee.toFixed(4) + ' GWEI');
+
+                        // Update recommendation
+                        updateAlertRecommendation(data.prediction);
+
+                        // Check active alerts against current gas fee
+                        checkActiveAlerts(data.prediction.current_fee);
+                    }
+                },
+                error: function() {
+                    $('#alert-recommendation').removeClass('alert-success').addClass('alert-danger')
+                        .html('<i class="fas fa-exclamation-circle me-2"></i> Failed to load gas fee data. Please try again later.');
+                }
+            });
         }
     });
 }
 
 // Update alert recommendation based on gas fee data
 function updateAlertRecommendation(prediction) {
-    const currentFee = prediction.current_fee;
-    const predictedFee = prediction.predicted_fee;
+    // Debug: Log prediction data to console
+    console.log("Gas Alerts Tab - Prediction Data:", prediction);
+    console.log("Gas Alerts Tab - Current Fee:", prediction.current_fee);
+    console.log("Gas Alerts Tab - Predicted Fee:", prediction.predicted_fee);
+    console.log("Gas Alerts Tab - Difference:", prediction.difference);
+    console.log("Gas Alerts Tab - Percent Change:", prediction.percent_change);
+    console.log("Gas Alerts Tab - Trend:", prediction.trend);
+
+    // IMPORTANT: Force a new prediction to ensure we have the latest data
+    $.ajax({
+        url: '/predict',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({}),
+        success: function(response) {
+            if (response.success) {
+                console.log("Forced new prediction for gas alerts tab:", response.prediction);
+
+                // Use the fresh prediction data
+                var difference = response.prediction.difference;
+                var percentChange = response.prediction.percent_change;
+                var currentFee = response.prediction.current_fee;
+                var predictedFee = response.prediction.predicted_fee;
+
+                // Update the displayed values
+                $('#alert-current-fee').text(currentFee.toFixed(4) + ' GWEI');
+                $('#alert-predicted-fee').text(predictedFee.toFixed(4) + ' GWEI');
+
+                // Always use the trend from the backend
+                var trend = response.prediction.trend;
+
+                console.log("Gas Alerts - Using trend from backend:", trend);
+                console.log("Gas Alerts - Trend value:", trend);
+
+                let recommendation = '';
+                let alertClass = 'alert-info';
+
+                // Use the explicit trend from the backend
+                if (trend === 'increasing') {
+                    // Gas fee is predicted to increase
+                    const percentIncrease = Math.abs(percentChange).toFixed(2);
+                    recommendation = `
+                        <i class="fas fa-arrow-up me-2"></i>
+                        Gas fees are predicted to increase by ${percentIncrease}% in the next hour.
+                        Consider making transactions now before fees increase further.
+                    `;
+                    alertClass = 'alert-warning';
+                } else if (trend === 'decreasing') {
+                    // Gas fee is predicted to decrease
+                    const percentDecrease = Math.abs(percentChange).toFixed(2);
+                    recommendation = `
+                        <i class="fas fa-arrow-down me-2"></i>
+                        Gas fees are predicted to decrease by ${percentDecrease}% in the next hour.
+                        Consider waiting before making transactions.
+                    `;
+                    alertClass = 'alert-success';
+                } else {
+                    // Gas fee is predicted to stay the same
+                    recommendation = `
+                        <i class="fas fa-equals me-2"></i>
+                        Gas fees are predicted to remain stable in the next hour.
+                        Current conditions are suitable for most transactions.
+                    `;
+                    alertClass = 'alert-info';
+                }
+
+                // Update recommendation display
+                $('#alert-recommendation').removeClass('alert-success alert-warning alert-info alert-danger')
+                    .addClass(alertClass)
+                    .html(recommendation);
+
+                // Check active alerts with the fresh data
+                checkActiveAlerts(currentFee);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error getting fresh prediction:", error);
+
+            // Fall back to the provided prediction data
+            fallbackUpdateRecommendation(prediction);
+        }
+    });
+}
+
+// Fallback function if the fresh prediction fails
+function fallbackUpdateRecommendation(prediction) {
+    console.log("Using fallback recommendation with provided data");
+
+    // Always use the trend from the backend
+    var trend = prediction.trend;
+    var percentChange = prediction.percent_change;
+
+    console.log("Fallback using trend from backend:", trend);
 
     let recommendation = '';
     let alertClass = 'alert-info';
 
-    if (predictedFee < currentFee) {
+    if (trend === 'increasing') {
+        // Gas fee is predicted to increase
+        const percentIncrease = Math.abs(percentChange).toFixed(2);
+        recommendation = `
+            <i class="fas fa-arrow-up me-2"></i>
+            Gas fees are predicted to increase by ${percentIncrease}% in the next hour.
+            Consider making transactions now before fees increase further.
+        `;
+        alertClass = 'alert-warning';
+    } else if (trend === 'decreasing') {
         // Gas fee is predicted to decrease
-        const percentDecrease = ((currentFee - predictedFee) / currentFee * 100).toFixed(2);
+        const percentDecrease = Math.abs(percentChange).toFixed(2);
         recommendation = `
             <i class="fas fa-arrow-down me-2"></i>
             Gas fees are predicted to decrease by ${percentDecrease}% in the next hour.
             Consider waiting before making transactions.
         `;
         alertClass = 'alert-success';
-    } else if (predictedFee > currentFee) {
-        // Gas fee is predicted to increase
-        const percentIncrease = ((predictedFee - currentFee) / currentFee * 100).toFixed(2);
-        recommendation = `
-            <i class="fas fa-arrow-up me-2"></i>
-            Gas fees are predicted to increase by ${percentIncrease}% in the next hour.
-            Consider making transactions now.
-        `;
-        alertClass = 'alert-warning';
     } else {
         // Gas fee is predicted to stay the same
         recommendation = `
             <i class="fas fa-equals me-2"></i>
             Gas fees are predicted to remain stable in the next hour.
+            Current conditions are suitable for most transactions.
         `;
         alertClass = 'alert-info';
     }
@@ -181,6 +309,30 @@ function saveNewAlert() {
         triggered: false
     };
 
+    // Send alert to server for confirmation email
+    $.ajax({
+        url: '/gas-alerts',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            threshold: threshold,
+            email: email,
+            phone: phone,
+            duration: duration,
+            condition: alertCondition
+        }),
+        success: function(response) {
+            if (response.success) {
+                console.log('Alert registered with server successfully');
+            } else {
+                console.error('Failed to register alert with server:', response.error);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error registering alert with server:', error);
+        }
+    });
+
     // Get existing alerts
     const savedAlerts = JSON.parse(localStorage.getItem('gasFeeAlerts')) || [];
 
@@ -200,7 +352,7 @@ function saveNewAlert() {
     $('#phone-container').hide();
 
     // Show success message
-    showAlertSuccess('Alert has been set successfully!');
+    showAlertSuccess('Alert has been set successfully! A confirmation email has been sent.');
 
     // Check if the alert should be triggered immediately
     $.ajax({
@@ -310,6 +462,9 @@ function checkActiveAlerts(currentFee) {
 
             // Show notification
             showAlertNotification(alert, currentFee);
+
+            // Send alert to server for email notification
+            sendAlertToServer(alert, currentFee);
         }
     });
 
@@ -317,6 +472,30 @@ function checkActiveAlerts(currentFee) {
     if (alertsUpdated) {
         localStorage.setItem('gasFeeAlerts', JSON.stringify(savedAlerts));
     }
+}
+
+// Send alert to server for email notification
+function sendAlertToServer(alert, currentFee) {
+    $.ajax({
+        url: '/trigger-alert',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            alert_id: alert.id,
+            alert: alert,
+            current_fee: currentFee
+        }),
+        success: function(response) {
+            if (response.success) {
+                console.log('Alert email sent successfully');
+            } else {
+                console.error('Failed to send alert email:', response.error);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error sending alert to server:', error);
+        }
+    });
 }
 
 // Show alert notification
